@@ -108,41 +108,41 @@ export default function SummaryPage({ patent }: SummaryPageProps) {
           </button>
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700">
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
                   {patent.title}
                 </h1>
                 
-                <div className="flex flex-wrap gap-6 text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center space-x-2">
-                    <FileText className="w-4 h-4" />
-                    <span>{patent.patent_id}</span>
+                <div className="flex flex-wrap gap-8 text-lg font-medium text-gray-800 dark:text-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="w-6 h-6 text-indigo-600" />
+                    <span className="text-indigo-700 dark:text-indigo-300">{patent.patent_id}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <User className="w-4 h-4" />
-                    <span>{patent.applicant}</span>
+                  <div className="flex items-center space-x-3">
+                    <User className="w-6 h-6 text-purple-600" />
+                    <span className="text-purple-700 dark:text-purple-300">{patent.applicant}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{patent.application_year}</span>
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                    <span className="text-blue-700 dark:text-blue-300">{patent.application_year}</span>
                   </div>
                 </div>
               </div>
               
               <div className="text-right">
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-4xl font-bold text-blue-600">
                   {patent.similarity_score}%
                 </div>
-                <div className="text-sm text-gray-500">similarity</div>
+                <div className="text-base text-gray-600 font-medium">similarity</div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Original Claim Text
               </h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
                 {patent.claim_text}
               </p>
             </div>
@@ -161,7 +161,7 @@ export default function SummaryPage({ patent }: SummaryPageProps) {
               <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                 AI-Powered Patent Analysis
               </h2>
             </div>
