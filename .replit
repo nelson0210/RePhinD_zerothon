@@ -2,7 +2,7 @@ modules = ["nodejs-20", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["freetype", "glibcLocales", "gumbo", "harfbuzz", "jbig2dec", "libjpeg_turbo", "mupdf", "openjpeg", "swig", "xcbuild"]
+packages = ["freetype", "glibcLocales", "gumbo", "harfbuzz", "jbig2dec", "libjpeg_turbo", "mupdf", "openjpeg", "swig", "xcbuild", "python311Packages.fastapi", "python311Packages.uvicorn", "python311Packages.python-multipart", "python311Packages.openai"]
 
 [workflows]
 runButton = "Project"
@@ -14,28 +14,29 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "README Server"
+args = "Backend"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "main"
+args = "Frontend"
 
 [[workflows.workflow]]
-name = "README Server"
+name = "Backend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python -m http.server 5000"
+args = "python simple_backend.py"
+waitForPort = 8000
+
+[[workflows.workflow]]
+name = "Frontend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx vite --host 0.0.0.0 --port 5000"
 waitForPort = 5000
-
-[[workflows.workflow]]
-name = "main"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cat README.md"
 
 [deployment]
 run = ["sh", "-c", "python -m http.server 5000"]
@@ -43,3 +44,7 @@ run = ["sh", "-c", "python -m http.server 5000"]
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
