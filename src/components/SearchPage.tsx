@@ -408,59 +408,29 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
               </motion.h2>
               
               {searchResults.map((patent, index) => {
-                const CircularProgress = ({ percentage }: { percentage: number }) => {
-                  const radius = 35
-                  const circumference = 2 * Math.PI * radius
-                  const strokeDasharray = circumference
-                  const strokeDashoffset = circumference - (percentage / 100) * circumference
 
+                const BarProgress = ({ percentage }: { percentage: number }) => {
                   return (
-                    <div className="relative w-20 h-20">
-                      <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
-                        {/* Background circle */}
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r={radius}
-                          stroke="currentColor"
-                          strokeWidth="6"
-                          fill="none"
-                          className="text-gray-200 dark:text-gray-700"
-                        />
-                        {/* Progress circle */}
-                        <motion.circle
-                          cx="40"
-                          cy="40"
-                          r={radius}
-                          stroke="url(#gradient)"
-                          strokeWidth="6"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray={strokeDasharray}
-                          initial={{ strokeDashoffset: circumference }}
-                          animate={{ strokeDashoffset }}
-                          transition={{ duration: 2, delay: index * 0.2, ease: "easeOut" }}
-                        />
-                        {/* Gradient definition */}
-                        <defs>
-                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#3B82F6" />
-                            <stop offset="50%" stopColor="#8B5CF6" />
-                            <stop offset="100%" stopColor="#06B6D4" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                      {/* Percentage text */}
-                      <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-48 h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 rounded-full flex items-center justify-end pr-3"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        transition={{ 
+                          duration: 1.5, 
+                          delay: index * 0.2, 
+                          ease: "easeOut" 
+                        }}
+                      >
                         <motion.span
-                          initial={{ opacity: 0, scale: 0.5 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, delay: index * 0.2 + 1.5 }}
-                          className="text-sm font-bold text-indigo-600 dark:text-indigo-400"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.2 + 1.2 }}
+                          className="text-white font-bold text-sm"
                         >
                           {percentage}%
                         </motion.span>
-                      </div>
+                      </motion.div>
                     </div>
                   )
                 }
@@ -513,13 +483,11 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                         <span>상세 분석 보기</span>
                       </motion.button>
                       
-                      <div className="flex items-center space-x-4 mr-4">
+                      <div className="flex flex-col items-end space-y-2 mr-4">
                         <div className="text-lg text-gray-600 dark:text-gray-400 font-semibold">
                           유사도
                         </div>
-                        <div className="transform scale-150">
-                          <CircularProgress percentage={patent.similarity_score} />
-                        </div>
+                        <BarProgress percentage={patent.similarity_score} />
                       </div>
                     </div>
                   </motion.div>
