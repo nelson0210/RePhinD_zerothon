@@ -1,17 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  
-  body {
-    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300;
-  }
-  
-  * {
-    @apply border-gray-200 dark:border-gray-700;
-  }
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background: white;
+  color: rgb(17 24 39);
+  transition: all 0.3s;
+}
+
+.dark body {
+  background: rgb(17 24 39);
+  color: white;
+}
+
+* {
+  border-color: rgb(229 231 235);
+}
+
+.dark * {
+  border-color: rgb(55 65 81);
 }
