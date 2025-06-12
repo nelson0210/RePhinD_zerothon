@@ -540,14 +540,12 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                       </div>
                       
                       {/* Right similarity chart area */}
-                      <div className="w-48 flex flex-col items-center justify-center relative">
-                        <div className="relative">
-                          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xl text-gray-600 dark:text-gray-400 font-bold whitespace-nowrap">
-                            유사도
-                          </div>
-                          <div className="transform scale-200">
-                            <CircularProgress percentage={patent.similarity_score} />
-                          </div>
+                      <div className="w-48 flex flex-col items-center justify-center space-y-6">
+                        <div className="text-2xl text-gray-600 dark:text-gray-400 font-bold">
+                          유사도
+                        </div>
+                        <div className="transform scale-200">
+                          <CircularProgress percentage={patent.similarity_score} />
                         </div>
                       </div>
                     </div>
