@@ -474,50 +474,54 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                     whileHover={{ y: -3, scale: 1.01 }}
                     className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
                   >
-                    <div className="mb-4">
-                      <div className="flex items-start mb-3">
-                        <span className="text-xl mr-3">📋</span>
-                        <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                          {patent.title}
-                        </h3>
+                    <div className="flex">
+                      {/* Left content area */}
+                      <div className="flex-1 pr-8">
+                        <div className="mb-4">
+                          <div className="flex items-start mb-3">
+                            <span className="text-xl mr-3">📋</span>
+                            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                              {patent.title}
+                            </h3>
+                          </div>
+                          <div className="flex flex-wrap gap-4 text-lg text-gray-500 dark:text-gray-500 ml-8 mb-4">
+                            <span className="font-normal flex items-center">
+                              🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
+                            </span>
+                            <span className="font-normal flex items-center">
+                              🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
+                            </span>
+                            <span className="font-normal flex items-center">
+                              📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="mb-6 ml-8">
+                          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+                            {patent.claim_text.length > 150 
+                              ? `${patent.claim_text.substring(0, 150)}...` 
+                              : patent.claim_text}
+                          </p>
+                        </div>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.03, y: -1 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => onPatentSelect(patent)}
+                          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-base ml-8"
+                        >
+                          <span className="text-xl">👁️</span>
+                          <span>상세 분석 보기</span>
+                        </motion.button>
                       </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-500 ml-8 mb-4">
-                        <span className="font-normal flex items-center">
-                          🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
-                        </span>
-                        <span className="font-normal flex items-center">
-                          🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
-                        </span>
-                        <span className="font-normal flex items-center">
-                          📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-6 ml-8">
-                      <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed max-w-4xl">
-                        {patent.claim_text.length > 150 
-                          ? `${patent.claim_text.substring(0, 150)}...` 
-                          : patent.claim_text}
-                      </p>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <motion.button
-                        whileHover={{ scale: 1.03, y: -1 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => onPatentSelect(patent)}
-                        className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-base ml-8"
-                      >
-                        <span className="text-xl">👁️</span>
-                        <span>상세 분석 보기</span>
-                      </motion.button>
                       
-                      <div className="flex items-center space-x-4 mr-4">
-                        <div className="text-lg text-gray-600 dark:text-gray-400 font-semibold">
+                      {/* Right similarity chart area */}
+                      <div className="w-48 flex flex-col items-center justify-center">
+                        <div className="text-xl text-gray-600 dark:text-gray-400 font-semibold mb-4">
                           유사도
                         </div>
-                        <div className="transform scale-150">
+                        <div className="transform scale-200">
                           <CircularProgress percentage={patent.similarity_score} />
                         </div>
                       </div>
