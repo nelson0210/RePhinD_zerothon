@@ -385,52 +385,46 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="space-y-10"
+            className="bg-gray-800 rounded-3xl p-8 shadow-2xl"
           >
-            
+            {/* 헤더 */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-white text-xl"
+                  >
+                    📊
+                  </motion.div>
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-white">Similarity Analysis</h2>
+                  <p className="text-gray-400">Top 10 matching patents</p>
+                </div>
+              </div>
+              <div className="bg-gray-700 px-4 py-2 rounded-lg">
+                <span className="text-gray-300 font-medium">{searchResults.length} Results</span>
+              </div>
+            </div>
 
             {/* 결과 목록 */}
-            <div className="grid gap-10">
-              <motion.h2 
-                className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white flex items-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <motion.span
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  className="text-5xl mr-4"
-                >
-                  ⭐
-                </motion.span>
-                유사 특허 목록 ({searchResults.length}개)
-              </motion.h2>
-              
+            <div className="space-y-4">
               {searchResults.map((patent, index) => {
-
                 const BarProgress = ({ percentage }: { percentage: number }) => {
                   return (
-                    <div className="w-48 h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden mx-6">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 rounded-full flex items-center justify-end pr-3"
+                        className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
                         transition={{ 
                           duration: 1.5, 
-                          delay: index * 0.2, 
+                          delay: index * 0.1, 
                           ease: "easeOut" 
                         }}
-                      >
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: index * 0.2 + 1.2 }}
-                          className="text-white font-bold text-sm"
-                        >
-                          {percentage}%
-                        </motion.span>
-                      </motion.div>
+                      />
                     </div>
                   )
                 }
@@ -438,56 +432,51 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                 return (
                   <motion.div
                     key={patent.patent_id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 * index }}
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
+                    whileHover={{ 
+                      scale: 1.02, 
+                      backgroundColor: "rgba(75, 85, 99, 0.8)",
+                      transition: { duration: 0.2 }
+                    }}
+                    onClick={() => onPatentSelect(patent)}
+                    className="bg-gray-700/50 hover:bg-gray-600/50 rounded-xl p-4 cursor-pointer transition-all duration-300 border border-gray-600/50 hover:border-gray-500"
                   >
-                    <div className="mb-4">
-                      <div className="flex items-start mb-3">
-                        <span className="text-xl mr-3">📋</span>
-                        <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                          {patent.title}
-                        </h3>
+                    <div className="flex items-center">
+                      {/* 순위 */}
+                      <div className="w-12 flex-shrink-0">
+                        <span className="text-gray-400 font-bold text-lg">#{index + 1}</span>
                       </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-500 ml-8 mb-4">
-                        <span className="font-normal flex items-center">
-                          🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
-                        </span>
-                        <span className="font-normal flex items-center">
-                          🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
-                        </span>
-                        <span className="font-normal flex items-center">
-                          📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-6 ml-8">
-                      <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed max-w-4xl">
-                        {patent.claim_text.length > 150 
-                          ? `${patent.claim_text.substring(0, 150)}...` 
-                          : patent.claim_text}
-                      </p>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <motion.button
-                        whileHover={{ scale: 1.03, y: -1 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => onPatentSelect(patent)}
-                        className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-base ml-8"
-                      >
-                        <span className="text-xl">👁️</span>
-                        <span>상세 분석 보기</span>
-                      </motion.button>
-                      
-                      <div className="flex flex-col items-end space-y-2 mr-4">
-                        <div className="text-lg text-gray-600 dark:text-gray-400 font-semibold">
-                          유사도
+
+                      {/* 아이콘과 특허 정보 */}
+                      <div className="flex items-center space-x-3 min-w-0 flex-shrink-0" style={{ width: '280px' }}>
+                        <div className="w-6 h-6 bg-yellow-500 rounded flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs">⚡</span>
                         </div>
-                        <BarProgress percentage={patent.similarity_score} />
+                        <div className="min-w-0">
+                          <div className="text-white font-bold text-sm truncate">
+                            {patent.patent_id}
+                          </div>
+                          <div className="text-gray-400 text-xs truncate">
+                            {patent.title.length > 30 ? `${patent.title.substring(0, 30)}...` : patent.title}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 진행률 바 */}
+                      <BarProgress percentage={patent.similarity_score} />
+
+                      {/* 퍼센트 */}
+                      <div className="w-16 flex-shrink-0 text-right">
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.1 + 1.2 }}
+                          className="text-red-400 font-bold text-sm"
+                        >
+                          {patent.similarity_score}%
+                        </motion.span>
                       </div>
                     </div>
                   </motion.div>
