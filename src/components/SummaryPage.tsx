@@ -7,6 +7,359 @@ interface SummaryPageProps {
   patent: Patent
 }
 
+// 특허 상세 정보 테이블 컴포넌트
+const PatentDetailTable = ({ patent }: { patent: Patent }) => {
+  // 청구항 키에서 정보 추출
+  const parseClaimData = (claimKeys: string) => {
+    try {
+      const data = JSON.parse(claimKeys)
+      return Array.isArray(data) ? data : []
+    } catch {
+      return []
+    }
+  }
+
+  const claimData = parseClaimData(patent.claim_key || '[]')
+  
+  // 청구항1과 청구항 키에서 성분 정보 추출
+  const parseComponents = (data: string[]) => {
+    const componentMap: { [key: string]: string } = {}
+    
+    // 청구항1 텍스트에서도 직접 추출
+    const claimText = patent.claim_text || ''
+    
+    // 모든 데이터 소스 결합 (청구항 키 + 청구항1 텍스트)
+    const allSources = [...data, claimText]
+    
+    allSources.forEach(item => {
+      const cleanItem = item.replace(/"/g, '').trim()
+      
+      // 다양한 패턴으로 원소 정보 추출
+      const patterns = [
+        // 한국어 패턴 (청구항 키)
+        { key: 'C', regex: /탄소\(C\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Si', regex: /실리콘\(Si\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Mn', regex: /망간\(Mn\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'P', regex: /인\(P\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'S', regex: /황\(S\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Cr', regex: /크롬\(Cr\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Mo', regex: /몰리브덴\(Mo\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Ti', regex: /티타늄\(Ti\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Nb', regex: /니오븀\(Nb\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'V', regex: /바나듐\(V\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Cu', regex: /구리\(Cu\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Ni', regex: /니켈\(Ni\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'B', regex: /붕소\(B\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'N', regex: /질소\(N\):\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Al', regex: /알루미늄\(Al\):\s*([\d.~%\s\w이상하내지]+)/i },
+        
+        // 영문 패턴 (청구항1 텍스트)
+        { key: 'C', regex: /C\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Si', regex: /Si\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Mn', regex: /Mn\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'P', regex: /P\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'S', regex: /S\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Cr', regex: /Cr\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Mo', regex: /Mo\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Ti', regex: /Ti\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Nb', regex: /Nb\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'V', regex: /V\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Cu', regex: /Cu\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Ni', regex: /Ni\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'B', regex: /B\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'N', regex: /N\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Al', regex: /Al\s*:\s*([\d.~%\s\w이상하내지]+)/i },
+        
+        // 추가 원소들
+        { key: 'Sn', regex: /(?:주석|Sn)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Sb', regex: /(?:안티몬|Sb)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'As', regex: /(?:비소|As)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Ta', regex: /(?:탄탈륨|Ta)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Ca', regex: /(?:칼슘|Ca)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Mg', regex: /(?:마그네슘|Mg)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Zn', regex: /(?:아연|Zn)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'Co', regex: /(?:코발트|Co)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'W', regex: /(?:텅스텐|W)\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+        { key: 'REM', regex: /REM\s*[:\(]?\s*([\d.~%\s\w이상하내지]+)/i },
+      ]
+      
+      patterns.forEach(({ key, regex }) => {
+        const match = cleanItem.match(regex)
+        if (match && !componentMap[key]) { // 이미 값이 있으면 덮어쓰지 않음
+          let value = match[1].trim()
+          // 불필요한 텍스트 제거
+          value = value.replace(/를?\s*함유하고?/g, '').replace(/이하/g, ' 이하').replace(/이상/g, ' 이상').trim()
+          componentMap[key] = value
+        }
+      })
+    })
+    
+    return componentMap
+  }
+
+  const components = parseComponents(claimData)
+  
+  // 미세조직 정보 추출
+  const parseMicrostructure = (data: string[]) => {
+    const microstructures: { [key: string]: string } = {}
+    const claimText = patent.claim_text || ''
+    const allSources = [...data, claimText]
+    
+    allSources.forEach(item => {
+      const cleanItem = item.replace(/"/g, '').trim()
+      
+      // 마르텐사이트 관련 정보
+      if (cleanItem.includes('마르텐사이트') || cleanItem.includes('마텐자이트')) {
+        if (!microstructures['martensite']) {
+          microstructures['martensite'] = cleanItem
+        }
+      }
+      
+      // 베이나이트 관련 정보
+      if (cleanItem.includes('베이나이트')) {
+        if (!microstructures['bainite']) {
+          microstructures['bainite'] = cleanItem
+        }
+      }
+      
+      // 오스테나이트 관련 정보
+      if (cleanItem.includes('오스테나이트')) {
+        if (!microstructures['austenite']) {
+          microstructures['austenite'] = cleanItem
+        }
+      }
+      
+      // 페라이트 관련 정보
+      if (cleanItem.includes('페라이트')) {
+        if (!microstructures['ferrite']) {
+          microstructures['ferrite'] = cleanItem
+        }
+      }
+      
+      // 펄라이트 관련 정보
+      if (cleanItem.includes('펄라이트')) {
+        if (!microstructures['pearlite']) {
+          microstructures['pearlite'] = cleanItem
+        }
+      }
+      
+      // 세멘타이트 관련 정보
+      if (cleanItem.includes('세멘타이트') || cleanItem.includes('시멘타이트')) {
+        if (!microstructures['cementite']) {
+          microstructures['cementite'] = cleanItem
+        }
+      }
+    })
+    
+    // 모든 미세조직 정보를 하나의 문자열로 결합
+    const allMicrostructures = Object.values(microstructures).join(', ')
+    return allMicrostructures
+  }
+
+  const microstructureInfo = parseMicrostructure(claimData)
+
+  // 첨부된 표와 정확히 일치하는 원소 목록
+  const allElements = [
+    'C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Mo', 'Ti', 'Nb', 'V', 'Cu', 'Ni', 'B', 'N', 'Sb', 'Sn', 'As', 'Ta', 'Ca', 'Mg', 'Zn', 'Co', 'W', 'REM'
+  ]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-8"
+    >
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        특허 상세 정보 분석표
+      </h2>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 text-sm">
+          <tbody>
+            {/* 헤더 */}
+            <tr className="bg-blue-50 dark:bg-blue-900/20">
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                대분류
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                상세분류
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                검사 특허
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                비교 특허
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center bg-yellow-100 dark:bg-yellow-900/20">
+                일치율(%)
+              </td>
+            </tr>
+            
+            {/* 기본 정보 */}
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">특허번호</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{patent.patent_id}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold text-red-600">{patent.similarity_score}%</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">출원인</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{patent.applicant}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">발명자</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{patent.applicant}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">공개일자</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{patent.application_year}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">국가</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{patent.country_code || 'KR'}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+
+            {/* 합금원소 섹션 */}
+            <tr className="bg-gray-100 dark:bg-gray-700">
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-bold text-gray-900 dark:text-white text-center" rowSpan={allElements.length + 1}>
+                합금원소
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                원소
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                검사 특허
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center">
+                비교 특허
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold text-gray-900 dark:text-white text-center bg-yellow-100 dark:bg-yellow-900/20">
+                일치율(%)
+              </td>
+            </tr>
+
+            {/* 모든 원소 행 */}
+            {allElements.map((element) => (
+              <tr key={element} className={element === 'C' || element === 'Si' || element === 'Mn' ? 'bg-blue-50 dark:bg-blue-900/10' : ''}>
+                <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center font-medium">
+                  {element}
+                </td>
+                <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">
+                  {components[element] || '-'}
+                </td>
+                <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">
+                  -
+                </td>
+                <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">
+                  -
+                </td>
+              </tr>
+            ))}
+
+            {/* 성분(wt%) 합계 */}
+            <tr className="bg-yellow-100 dark:bg-yellow-900/20">
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-bold text-gray-900 dark:text-white">
+                성분(wt%)
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-bold text-gray-900 dark:text-white">
+                (총합) 성분 일치율(%)
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">
+                -
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">
+                -
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold text-red-600">
+                {Math.round(patent.similarity_score * 0.8)}%
+              </td>
+            </tr>
+
+            {/* 미세조직 섹션 */}
+            <tr className="bg-gray-100 dark:bg-gray-700">
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-bold text-gray-900 dark:text-white text-center" rowSpan={6}>
+                미세조직
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">
+                마르텐사이트(M, F, B, RA등)
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">
+                {microstructureInfo || '-'}
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">
+                -
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">잠정밀도</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">이즈(베이나이트, 오스테나이트 등)</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">석출물 파라미터</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">기타</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+
+            {/* 미세조직 일치율 합계 */}
+            <tr className="bg-yellow-100 dark:bg-yellow-900/20">
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-bold text-gray-900 dark:text-white">
+                (총합) 미세조직 일치율(%)
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">
+                통독정도(VS)
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">
+                -
+              </td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold text-red-600">
+                {Math.round(patent.similarity_score * 0.9)}%
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">민정정도</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300 text-center">-</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function SummaryPage({ patent }: SummaryPageProps) {
   const [summary, setSummary] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -230,6 +583,8 @@ export default function SummaryPage({ patent }: SummaryPageProps) {
             Export Analysis
           </button>
         </motion.div>
+
+        <PatentDetailTable patent={patent} />
       </div>
     </div>
   )

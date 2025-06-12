@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import PyMuPDF as fitz
+import fitz
 import pdfplumber
 import os
 import re
@@ -13,11 +13,12 @@ from typing import List, Dict, Any
 import json
 from dotenv import load_dotenv
 import openai
+from rag_system import get_rag_system, PatentRAGSystem
 
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(title="RePhinD API", description="Patent Similarity Search and Summarization API")
+app = FastAPI(title="RePhinD API", description="Patent Similarity Search and Summarization API with RAG")
 
 # Configure CORS
 app.add_middleware(
@@ -31,30 +32,22 @@ app.add_middleware(
 # Initialize OpenAI client
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Global variables for models and data
-model = None
-patent_data = None
-patent_embeddings = None
+# Global RAG system
+rag_system = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize models and load data on startup"""
-    global model, patent_data, patent_embeddings
+    """Initialize RAG system on startup"""
+    global rag_system
     
-    # Load SentenceTransformer model
-    print("Loading SentenceTransformer model...")
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    
-    # Load patent data (will be replaced with actual CSV data)
-    print("Loading patent data...")
-    patent_data = create_sample_patent_data()
-    
-    # Generate embeddings for patent data
-    print("Generating patent embeddings...")
-    patent_texts = patent_data['claim_text'].tolist()
-    patent_embeddings = model.encode(patent_texts)
-    
-    print("Startup complete!")
+    print("Initializing RAG system...")
+    try:
+        rag_system = get_rag_system()
+        print("RAG system startup complete!")
+    except Exception as e:
+        print(f"Error initializing RAG system: {e}")
+        # Fallback to basic system if RAG fails
+        rag_system = None
 
 def create_sample_patent_data():
     """Create sample patent data for demonstration"""
@@ -167,86 +160,102 @@ async def upload_pdf(file: UploadFile = File(...)):
 
 @app.post("/search-similar-patents")
 async def search_similar_patents(request: Dict[str, Any]):
-    """Search for similar patents based on claim text"""
+    """Search for similar patents using RAG system"""
     claim_text = request.get("claim_text", "")
+    filters = request.get("filters", {})
+    top_k = request.get("top_k", 10)
     
     if not claim_text:
         raise HTTPException(status_code=400, detail="Claim text is required")
     
     try:
-        # Generate embedding for the input claim
-        query_embedding = model.encode([claim_text])
+        if rag_system is None:
+            raise HTTPException(status_code=503, detail="RAG system not available")
         
-        # Calculate similarities
-        similarities = cosine_similarity(query_embedding, patent_embeddings)[0]
+        # Use RAG system for enhanced search
+        if filters:
+            results = rag_system.enhanced_similarity_search(claim_text, filters, top_k)
+        else:
+            results = rag_system.search_similar_patents(claim_text, top_k)
         
-        # Get top 10 similar patents
-        top_indices = np.argsort(similarities)[::-1][:10]
-        
-        results = []
-        for idx in top_indices:
-            similarity_score = float(similarities[idx]) * 100  # Convert to percentage
-            patent = patent_data.iloc[idx]
-            
-            results.append({
-                "patent_id": patent['patent_id'],
-                "title": patent['title'],
-                "applicant": patent['applicant'],
-                "application_year": int(patent['application_year']),
-                "similarity_score": round(similarity_score, 2),
-                "claim_text": patent['claim_text']
-            })
+        # Add claim_key to results
+        for result in results:
+            # Convert keywords to JSON string for claim_key
+            if 'keywords' in result:
+                result['claim_key'] = json.dumps(result['keywords'], ensure_ascii=False)
+                # Remove the keywords field as it's now in claim_key
+                del result['keywords']
         
         return {"similar_patents": results}
     except Exception as e:
+        print(f"Error in search: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/summarize-patent")
 async def summarize_patent(request: Dict[str, Any]):
-    """Generate AI summary for a patent"""
+    """Generate RAG-enhanced AI summary for a patent"""
     patent_data_req = request.get("patent_data", {})
     
     if not patent_data_req:
         raise HTTPException(status_code=400, detail="Patent data is required")
     
     try:
-        # Create a comprehensive prompt for GPT
+        # Get similar patents for RAG context
+        similar_patents = []
+        rag_context = ""
+        
+        if rag_system and patent_data_req.get('claim_text'):
+            try:
+                similar_patents = rag_system.search_similar_patents(
+                    patent_data_req['claim_text'], top_k=5
+                )
+                rag_context = rag_system.get_context_for_summarization(
+                    patent_data_req, similar_patents
+                )
+            except Exception as e:
+                print(f"Error getting RAG context: {e}")
+        
+        # Create RAG-enhanced prompt for GPT
         prompt = f"""
-Please provide a comprehensive patent summary in the following structured format:
+Please provide a comprehensive patent summary using the following information:
 
-Patent Title: {patent_data_req.get('title', 'N/A')}
-Applicant: {patent_data_req.get('applicant', 'N/A')}
-Application Year: {patent_data_req.get('application_year', 'N/A')}
+{rag_context if rag_context else f'''
+분석 대상 특허:
+- 제목: {patent_data_req.get('title', 'N/A')}
+- 출원인: {patent_data_req.get('applicant', 'N/A')}
+- 출원년도: {patent_data_req.get('application_year', 'N/A')}
+- 청구항: {patent_data_req.get('claim_text', 'N/A')}
+'''}
 
-Claim Text: {patent_data_req.get('claim_text', 'N/A')}
+위의 정보를 바탕으로 다음 형식으로 특허 분석을 제공해주세요:
 
-Please analyze this patent and provide:
+1. **기술 분야**: 이 특허가 다루는 기술 영역은 무엇인가요?
 
-1. **Technical Field**: What technology domain does this patent cover?
+2. **해결 문제**: 이 발명이 해결하는 구체적인 문제나 과제는 무엇인가요?
 
-2. **Problem Solved**: What specific problem or challenge does this invention address?
+3. **핵심 혁신**: 주요 혁신적 측면이나 기술적 기여는 무엇인가요?
 
-3. **Key Innovation**: What is the main innovative aspect or technical contribution?
+4. **기술 구성요소**: 필수적인 기술 요소나 구성품은 무엇인가요?
 
-4. **Technical Components**: What are the essential technical elements or components?
+5. **장점**: 이 발명이 제공하는 이익이나 개선사항은 무엇인가요?
 
-5. **Advantages**: What benefits or improvements does this invention provide?
+6. **잠재적 응용**: 어떤 분야나 산업에 적용될 수 있나요?
 
-6. **Potential Applications**: In what areas or industries could this be applied?
+7. **기술 복잡도**: 기술 복잡도를 평가하고 (낮음/보통/높음) 그 이유를 설명해주세요.
 
-7. **Technical Complexity**: Rate the technical complexity (Low/Medium/High) and explain why.
+8. **경쟁 기술 분석**: {f"유사 특허 {len(similar_patents)}개를 바탕으로 경쟁 기술 현황을 분석해주세요." if similar_patents else "관련 기술 동향을 분석해주세요."}
 
-Format the response as clear, concise bullet points under each section.
+각 섹션 아래에 명확하고 간결한 불릿 포인트로 응답을 작성해주세요.
 """
 
         # Call OpenAI API
         response = openai.chat.completions.create(
-            model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+            model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a patent analysis expert. Provide clear, structured analysis of patent documents."},
+                {"role": "system", "content": "당신은 특허 분석 전문가입니다. 특허 문서의 명확하고 구조화된 분석을 제공하세요. 유사 특허 정보가 있다면 이를 활용하여 더 깊이 있는 분석을 해주세요."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1000,
+            max_tokens=1500,
             temperature=0.3
         )
         
@@ -254,11 +263,14 @@ Format the response as clear, concise bullet points under each section.
         
         return {
             "patent_id": patent_data_req.get('patent_id'),
-            "summary": summary
+            "summary": summary,
+            "similar_patents_count": len(similar_patents),
+            "rag_enhanced": bool(rag_context)
         }
     except Exception as e:
         if "openai" in str(e).lower() or "api" in str(e).lower():
             raise HTTPException(status_code=400, detail="OpenAI API error. Please check your API key configuration.")
+        print(f"Error in summarization: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
