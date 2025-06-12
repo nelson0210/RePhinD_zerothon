@@ -330,18 +330,18 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
     
     // 각 원소별로 정확한 패턴 매칭
     const elements = [
-      { key: 'C', names: ['탄소', 'C'] },
-      { key: 'Si', names: ['실리콘', 'Si'] },
-      { key: 'Mn', names: ['망간', 'Mn'] },
-      { key: 'P', names: ['인', 'P'] },
-      { key: 'S', names: ['황', 'S'] },
-      { key: 'Cr', names: ['크롬', 'Cr'] },
-      { key: 'Mo', names: ['몰리브덴', 'Mo'] },
-      { key: 'Ti', names: ['티타늄', 'Ti'] },
-      { key: 'Nb', names: ['니오븀', 'Nb'] },
-      { key: 'B', names: ['붕소', 'B'] },
-      { key: 'Al', names: ['알루미늄', 'Al'] },
-      { key: 'N', names: ['질소', 'N'] }
+      { key: 'C', names: ['탄소', 'C', 'carbon'] },
+      { key: 'Si', names: ['실리콘', 'Si', 'silicon'] },
+      { key: 'Mn', names: ['망간', 'Mn', 'manganese'] },
+      { key: 'P', names: ['인', 'P', 'phosphorus'] },
+      { key: 'S', names: ['황', 'S', 'sulfur'] },
+      { key: 'Cr', names: ['크롬', 'Cr', 'chromium'] },
+      { key: 'Mo', names: ['몰리브덴', 'Mo', 'molybdenum'] },
+      { key: 'Ti', names: ['티타늄', 'Ti', 'titanium'] },
+      { key: 'Nb', names: ['니오븀', 'Nb', 'niobium'] },
+      { key: 'B', names: ['붕소', 'B', 'boron'] },
+      { key: 'Al', names: ['알루미늄', 'Al', 'aluminum'] },
+      { key: 'N', names: ['질소', 'N', 'nitrogen'] }
     ];
     
     elements.forEach(({ key, names }) => {
@@ -349,7 +349,7 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
       
       for (const name of names) {
         // 패턴 1: "C : 0.12 % 이상 0.50 % 이하" 형태
-        let pattern = new RegExp(`${name}\\s*:\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|초과)\\s*(\\d+\\.?\\d*)\\s*%\\s*(이하|미만)`, 'i');
+        let pattern = new RegExp(`${name}\\s*[:\\s]\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|초과)\\s*(\\d+\\.?\\d*)\\s*%\\s*(이하|미만)`, 'i');
         let match = claimText.match(pattern);
         if (match) {
           const [, min, minOp, max, maxOp] = match;
@@ -360,7 +360,7 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
         }
         
         // 패턴 2: "C : 0.50 % 이하" 형태
-        pattern = new RegExp(`${name}\\s*:\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|이하|초과|미만)`, 'i');
+        pattern = new RegExp(`${name}\\s*[:\\s]\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|이하|초과|미만)`, 'i');
         match = claimText.match(pattern);
         if (match) {
           const [, value, condition] = match;
@@ -369,7 +369,7 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
         }
         
         // 패턴 3: "탄소(C): 0.12~0.50%" 형태
-        pattern = new RegExp(`${name}\\s*\\(${key}\\)\\s*:\\s*(\\d+\\.?\\d*)\\s*~\\s*(\\d+\\.?\\d*)\\s*%`, 'i');
+        pattern = new RegExp(`${name}\\s*\\(${key}\\)\\s*[:\\s]\\s*(\\d+\\.?\\d*)\\s*[~-]\\s*(\\d+\\.?\\d*)\\s*%`, 'i');
         match = claimText.match(pattern);
         if (match) {
           const [, min, max] = match;
@@ -378,7 +378,7 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
         }
         
         // 패턴 4: "탄소(C): 0.50% 이하" 형태
-        pattern = new RegExp(`${name}\\s*\\(${key}\\)\\s*:\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|이하|초과|미만)`, 'i');
+        pattern = new RegExp(`${name}\\s*\\(${key}\\)\\s*[:\\s]\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|이하|초과|미만)`, 'i');
         match = claimText.match(pattern);
         if (match) {
           const [, value, condition] = match;
@@ -425,6 +425,42 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
           properties[key] = `${value}% ${condition}`;
           break;
         }
+        
+        // 패턴 9: "C가 0.12~0.50 중량%" 형태
+        pattern = new RegExp(`${key}가?\\s*(\\d+\\.?\\d*)\\s*[~-]\\s*(\\d+\\.?\\d*)\\s*(?:중량%|wt%|%)`, 'i');
+        match = claimText.match(pattern);
+        if (match) {
+          const [, min, max] = match;
+          properties[key] = `${min}% 이상 ~ ${max}% 이하`;
+          break;
+        }
+        
+        // 패턴 10: "C가 0.50% 이하" 형태
+        pattern = new RegExp(`${key}가?\\s*(\\d+\\.?\\d*)\\s*%\\s*(이상|이하|초과|미만)`, 'i');
+        match = claimText.match(pattern);
+        if (match) {
+          const [, value, condition] = match;
+          properties[key] = `${value}% ${condition}`;
+          break;
+        }
+        
+        // 패턴 11: "중량%로 C: 0.12~0.50" 형태
+        pattern = new RegExp(`중량%로\\s*${key}\\s*[:\\s]\\s*(\\d+\\.?\\d*)\\s*[~-]\\s*(\\d+\\.?\\d*)`, 'i');
+        match = claimText.match(pattern);
+        if (match) {
+          const [, min, max] = match;
+          properties[key] = `${min}% 이상 ~ ${max}% 이하`;
+          break;
+        }
+        
+        // 패턴 12: "중량%로 C: 0.50 이하" 형태
+        pattern = new RegExp(`중량%로\\s*${key}\\s*[:\\s]\\s*(\\d+\\.?\\d*)\\s*(이상|이하|초과|미만)`, 'i');
+        match = claimText.match(pattern);
+        if (match) {
+          const [, value, condition] = match;
+          properties[key] = `${value}% ${condition}`;
+          break;
+        }
       }
     });
     
@@ -460,6 +496,60 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
   // 비교 특허 (클릭한 특허)에서 성분 정보 추출
   const compareComponents = parseUserClaimText(patent.claim_text)
   
+  // 비교 특허의 공개일자 추출 함수
+  const extractPublicationDate = (claimText: string, fallbackYear: number): string => {
+    if (!claimText) {
+      return fallbackYear ? `${fallbackYear}-01-01` : '-'
+    }
+    
+    // 다양한 날짜 패턴 시도
+    const datePatterns = [
+      // YYYY-MM-DD 형태
+      /(?:공개일자?|출원일|publication\s*date|application\s*date)\s*[":]\s*([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})/i,
+      // YYYY.MM.DD 형태
+      /(?:공개일자?|출원일|publication\s*date|application\s*date)\s*[":]\s*([0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2})/i,
+      // YYYY년 MM월 DD일 형태
+      /([0-9]{4})년\s*([0-9]{1,2})월\s*([0-9]{1,2})일/,
+      // YYYY/MM/DD 형태
+      /([0-9]{4})\/([0-9]{1,2})\/([0-9]{1,2})/,
+      // 단순 YYYY-MM-DD 패턴
+      /([0-9]{4}[-.]?[0-9]{1,2}[-.]?[0-9]{1,2})/
+    ]
+    
+    for (const pattern of datePatterns) {
+      const match = claimText.match(pattern)
+      if (match) {
+        if (match[3]) {
+          // 년, 월, 일이 분리된 경우
+          const year = match[1]
+          const month = match[2].padStart(2, '0')
+          const day = match[3].padStart(2, '0')
+          return `${year}-${month}-${day}`
+        } else if (match[1]) {
+          // 전체 날짜가 하나의 그룹인 경우
+          let dateStr = match[1]
+          // 점이나 슬래시를 하이픈으로 변경
+          dateStr = dateStr.replace(/[.\/]/g, '-')
+          // YYYY-M-D를 YYYY-MM-DD로 변환
+          const parts = dateStr.split('-')
+          if (parts.length === 3) {
+            const year = parts[0]
+            const month = parts[1].padStart(2, '0')
+            const day = parts[2].padStart(2, '0')
+            return `${year}-${month}-${day}`
+          }
+          return dateStr
+        }
+      }
+    }
+    
+    // 패턴을 찾지 못한 경우 fallback 사용
+    return fallbackYear ? `${fallbackYear}-01-01` : '-'
+  }
+  
+  // 비교 특허의 공개일자 추출
+  const comparePatentPublicationDate = extractPublicationDate(patent.claim_text, patent.application_year)
+
   // 강종분류 유사도 계산 함수
   const calculateSteelClassificationSimilarity = (searchSteel: string, compareSteel: string): number => {
     if (!searchSteel || !compareSteel) return 0
@@ -732,7 +822,9 @@ const PatentDetailTable = ({ patent, searchClaimText }: { patent: Patent, search
             <tr>
               <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">공개일자</td>
               <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{searchPatentInfo.publication_date}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">{patent.application_year}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-700 dark:text-gray-300">
+                {comparePatentPublicationDate}
+              </td>
               <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-700 dark:text-gray-300">-</td>
             </tr>
             <tr>

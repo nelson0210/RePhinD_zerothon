@@ -150,9 +150,13 @@ class PatentRAGSystem:
         query_embedding_normalized = query_embedding / np.linalg.norm(query_embedding, axis=1, keepdims=True)
         
         # Search using FAISS
-        similarities, indices = self.index.search(query_embedding_normalized.astype('float32'), top_k)
+        similarities, indices = self.index.search(query_embedding_normalized.astype('float32'), top_k * 2)  # Get more candidates
         
-        # Prepare results
+        # Extract product group and steel grade from query text for comparison
+        query_product_group = self._extract_product_group_from_query(query_text)
+        query_steel_grade = self._extract_steel_grade_from_query(query_text)
+        
+        # Prepare results with enhanced scoring
         results = []
         for i, (similarity, idx) in enumerate(zip(similarities[0], indices[0])):
             if idx < len(self.patent_data):
@@ -169,21 +173,306 @@ class PatentRAGSystem:
                 keywords = patent['parsed_keywords'] if isinstance(patent['parsed_keywords'], list) else []
                 enhanced_keywords = keywords + extracted_components
                 
+                # Calculate enhanced similarity score with product group and steel grade weighting
+                base_similarity = float(similarity * 100)
+                patent_product_group = str(patent.get('제품군', ''))
+                patent_steel_grade = str(patent.get('강종분류', ''))
+                
+                # Apply product group and steel grade weighting
+                enhanced_similarity = self._calculate_enhanced_similarity(
+                    base_similarity, query_product_group, patent_product_group, 
+                    query_steel_grade, patent_steel_grade, query_text, claim_text
+                )
+                
                 result = {
                     "patent_id": patent_id,
                     "title": str(patent['발명의 명칭']),
                     "applicant": str(patent['출원인']),
                     "application_year": self._extract_year(patent.get('출원일', '')),
-                    "similarity_score": float(similarity * 100),  # Convert to percentage
+                    "similarity_score": enhanced_similarity,
                     "claim_text": claim_text,
                     "country_code": str(patent.get('국가코드', 'KR')),
-                    "product_group": str(patent.get('제품군', '')),
-                    "keywords": enhanced_keywords
+                    "product_group": patent_product_group,
+                    "steel_grade": patent_steel_grade,
+                    "keywords": enhanced_keywords,
+                    "base_similarity": base_similarity  # Keep original for reference
                 }
                 results.append(result)
         
-        print(f"Found {len(results)} similar patents")
+        # Sort by enhanced similarity and return top_k
+        results.sort(key=lambda x: x['similarity_score'], reverse=True)
+        results = results[:top_k]
+        
+        print(f"Found {len(results)} similar patents with enhanced scoring")
         return results
+    
+    def _extract_product_group_from_query(self, query_text: str) -> str:
+        """Extract product group information from query text"""
+        # Define product group keywords
+        product_group_keywords = {
+            'Mart강': ['Mart강', '마르텐사이트강', 'martensitic', '마르텐사이트'],
+            'HPF강': ['HPF강', 'HPF', 'Hot Press Forming', '핫프레스포밍'],
+            '스테인리스강': ['스테인리스', '스테인레스', 'stainless'],
+            '탄소강': ['탄소강', 'carbon steel'],
+            '합금강': ['합금강', 'alloy steel'],
+            '고강도강': ['고강도', 'high strength'],
+            '강판': ['강판', 'steel sheet', 'steel plate'],
+            '강재': ['강재', 'steel material'],
+            '도금강판': ['도금', '아연도금', 'galvanized', 'coated'],
+            '냉연강판': ['냉연', 'cold rolled'],
+            '열연강판': ['열연', 'hot rolled']
+        }
+        
+        query_lower = query_text.lower()
+        
+        for product_group, keywords in product_group_keywords.items():
+            for keyword in keywords:
+                if keyword.lower() in query_lower:
+                    return product_group
+        
+        return ""
+    
+    def _extract_steel_grade_from_query(self, query_text: str) -> str:
+        """Extract steel grade classification from query text"""
+        # Define steel grade keywords with priority order
+        steel_grade_keywords = {
+            'HPF강': ['HPF강', 'HPF', 'Hot Press Forming', '핫프레스포밍', '핫스탬핑'],
+            'Mart강': ['Mart강', '마르텐사이트강', 'martensitic steel', '마르텐사이트계'],
+            'DP강': ['DP강', 'Dual Phase', '듀얼페이즈', 'dual phase'],
+            'TRIP강': ['TRIP강', 'TRIP', 'transformation induced plasticity'],
+            'CP강': ['CP강', 'Complex Phase', '복합조직강'],
+            'TWIP강': ['TWIP강', 'TWIP', 'twinning induced plasticity'],
+            'FB강': ['FB강', 'Ferrite Bainite', '페라이트베이나이트'],
+            'IF강': ['IF강', 'Interstitial Free', '극저탄소강'],
+            '고장력강': ['고장력강', 'high tensile', '고인장강도'],
+            '초고장력강': ['초고장력강', 'ultra high tensile', 'UHTS'],
+            '스테인리스강': ['스테인리스강', 'stainless steel', '스테인레스강'],
+            '탄소강': ['탄소강', 'carbon steel'],
+            '합금강': ['합금강', 'alloy steel'],
+            '도금강판': ['도금강판', '아연도금강판', 'galvanized steel', 'coated steel'],
+            '냉연강판': ['냉연강판', 'cold rolled steel'],
+            '열연강판': ['열연강판', 'hot rolled steel']
+        }
+        
+        query_lower = query_text.lower()
+        
+        # HPF강을 최우선으로 검사
+        for steel_grade, keywords in steel_grade_keywords.items():
+            for keyword in keywords:
+                if keyword.lower() in query_lower:
+                    return steel_grade
+        
+        return ""
+    
+    def _calculate_enhanced_similarity(self, base_similarity: float, query_product_group: str, 
+                                     patent_product_group: str, query_steel_grade: str, 
+                                     patent_steel_grade: str, query_text: str, claim_text: str) -> float:
+        """Calculate enhanced similarity with product group and steel grade weighting"""
+        
+        # Start with base similarity
+        enhanced_score = base_similarity
+        
+        # Product group matching bonus/penalty
+        if query_product_group and patent_product_group:
+            if query_product_group == patent_product_group:
+                # Exact match: significant bonus
+                enhanced_score *= 1.3  # 30% boost
+                print(f"Product group exact match bonus: {query_product_group}")
+            elif self._are_related_product_groups(query_product_group, patent_product_group):
+                # Related groups: moderate bonus
+                enhanced_score *= 1.15  # 15% boost
+                print(f"Product group related bonus: {query_product_group} <-> {patent_product_group}")
+            else:
+                # Different groups: penalty
+                enhanced_score *= 0.8  # 20% penalty
+                print(f"Product group mismatch penalty: {query_product_group} <-> {patent_product_group}")
+        
+        # Additional severe penalty for HPF강 when searching for Mart강
+        if ((query_product_group == 'Mart강' and patent_product_group == 'HPF강') or 
+            (query_steel_grade == 'Mart강' and patent_steel_grade == 'HPF강')):
+            enhanced_score *= 0.1  # Additional 90% penalty for HPF강 vs Mart강
+            print(f"HPF강 vs Mart강 severe penalty applied: {enhanced_score:.1f}")
+        elif ((query_product_group == 'HPF강' and patent_product_group == 'Mart강') or 
+              (query_steel_grade == 'HPF강' and patent_steel_grade == 'Mart강')):
+            enhanced_score *= 0.1  # Additional 90% penalty for Mart강 vs HPF강
+            print(f"Mart강 vs HPF강 severe penalty applied: {enhanced_score:.1f}")
+        
+        # Steel grade matching bonus/penalty
+        if query_steel_grade and patent_steel_grade:
+            steel_grade_similarity = self._calculate_steel_grade_similarity(query_steel_grade, patent_steel_grade)
+            if steel_grade_similarity >= 0.9:
+                # Very high similarity: significant bonus
+                enhanced_score *= 1.25  # 25% boost
+                print(f"Steel grade high similarity bonus: {query_steel_grade} <-> {patent_steel_grade} ({steel_grade_similarity:.1%})")
+            elif steel_grade_similarity >= 0.7:
+                # High similarity: moderate bonus
+                enhanced_score *= 1.15  # 15% boost
+                print(f"Steel grade moderate similarity bonus: {query_steel_grade} <-> {patent_steel_grade} ({steel_grade_similarity:.1%})")
+            elif steel_grade_similarity >= 0.5:
+                # Medium similarity: small bonus
+                enhanced_score *= 1.05  # 5% boost
+                print(f"Steel grade small similarity bonus: {query_steel_grade} <-> {patent_steel_grade} ({steel_grade_similarity:.1%})")
+            elif steel_grade_similarity >= 0.3:
+                # Low similarity: small penalty
+                enhanced_score *= 0.95  # 5% penalty
+                print(f"Steel grade low similarity penalty: {query_steel_grade} <-> {patent_steel_grade} ({steel_grade_similarity:.1%})")
+            elif steel_grade_similarity >= 0.1:
+                # Very low similarity: significant penalty
+                enhanced_score *= 0.75  # 25% penalty
+                print(f"Steel grade mismatch penalty: {query_steel_grade} <-> {patent_steel_grade} ({steel_grade_similarity:.1%})")
+            else:
+                # Extremely low similarity (HPF vs Mart): severe penalty
+                enhanced_score *= 0.15  # 85% penalty
+                print(f"Steel grade extreme mismatch penalty: {query_steel_grade} <-> {patent_steel_grade} ({steel_grade_similarity:.1%})")
+        
+        # Additional technical content matching
+        technical_bonus = self._calculate_technical_content_bonus(query_text, claim_text)
+        enhanced_score *= (1 + technical_bonus)
+        
+        # Ensure score doesn't exceed 100
+        enhanced_score = min(enhanced_score, 100.0)
+        
+        return enhanced_score
+    
+    def _calculate_steel_grade_similarity(self, grade1: str, grade2: str) -> float:
+        """Calculate similarity between steel grades"""
+        if grade1 == grade2:
+            return 1.0
+        
+                 # Define steel grade similarity matrix
+        similarity_matrix = {
+            'HPF강': {
+                'Mart강': 0.01,  # Extremely different steels
+                'DP강': 0.3,
+                'TRIP강': 0.25,
+                'CP강': 0.35,
+                'TWIP강': 0.2,
+                'FB강': 0.4,
+                '고장력강': 0.6,
+                '초고장력강': 0.8,
+                '스테인리스강': 0.1,
+                '탄소강': 0.2,
+                '합금강': 0.4
+            },
+            'Mart강': {
+                'HPF강': 0.01,  # Extremely different steels
+                'DP강': 0.4,
+                'TRIP강': 0.35,
+                'CP강': 0.5,
+                'TWIP강': 0.3,
+                'FB강': 0.6,
+                '고장력강': 0.7,
+                '초고장력강': 0.8,
+                '스테인리스강': 0.2,
+                '탄소강': 0.3,
+                '합금강': 0.6
+            },
+            'DP강': {
+                'HPF강': 0.3,
+                'Mart강': 0.4,
+                'TRIP강': 0.7,
+                'CP강': 0.8,
+                'TWIP강': 0.6,
+                'FB강': 0.7,
+                '고장력강': 0.8,
+                '초고장력강': 0.7,
+                '스테인리스강': 0.1,
+                '탄소강': 0.3,
+                '합금강': 0.5
+            },
+            'TRIP강': {
+                'HPF강': 0.25,
+                'Mart강': 0.35,
+                'DP강': 0.7,
+                'CP강': 0.75,
+                'TWIP강': 0.8,
+                'FB강': 0.6,
+                '고장력강': 0.7,
+                '초고장력강': 0.6,
+                '스테인리스강': 0.1,
+                '탄소강': 0.2,
+                '합금강': 0.4
+            },
+            '고장력강': {
+                'HPF강': 0.6,
+                'Mart강': 0.7,
+                'DP강': 0.8,
+                'TRIP강': 0.7,
+                'CP강': 0.8,
+                'TWIP강': 0.6,
+                'FB강': 0.7,
+                '초고장력강': 0.9,
+                '스테인리스강': 0.2,
+                '탄소강': 0.5,
+                '합금강': 0.6
+            },
+            '초고장력강': {
+                'HPF강': 0.8,
+                'Mart강': 0.8,
+                'DP강': 0.7,
+                'TRIP강': 0.6,
+                'CP강': 0.7,
+                'TWIP강': 0.5,
+                'FB강': 0.6,
+                '고장력강': 0.9,
+                '스테인리스강': 0.1,
+                '탄소강': 0.3,
+                '합금강': 0.5
+            }
+        }
+        
+        # Check direct similarity
+        if grade1 in similarity_matrix and grade2 in similarity_matrix[grade1]:
+            return similarity_matrix[grade1][grade2]
+        
+        # Check reverse similarity
+        if grade2 in similarity_matrix and grade1 in similarity_matrix[grade2]:
+            return similarity_matrix[grade2][grade1]
+        
+        # Default similarity for unknown combinations
+        return 0.1
+    
+    def _are_related_product_groups(self, group1: str, group2: str) -> bool:
+        """Check if two product groups are related"""
+        related_groups = {
+            'Mart강': ['고강도강', 'HPF강'],
+            'HPF강': ['고강도강', 'Mart강'],
+            '고강도강': ['Mart강', 'HPF강'],
+            '강판': ['도금강판', '냉연강판', '열연강판'],
+            '도금강판': ['강판', '냉연강판'],
+            '냉연강판': ['강판', '도금강판'],
+            '열연강판': ['강판'],
+            '스테인리스강': ['합금강'],
+            '합금강': ['스테인리스강']
+        }
+        
+        return group2 in related_groups.get(group1, [])
+    
+    def _calculate_technical_content_bonus(self, query_text: str, claim_text: str) -> float:
+        """Calculate bonus based on technical content similarity"""
+        bonus = 0.0
+        
+        # Check for common technical terms
+        technical_terms = [
+            '마르텐사이트', '베이나이트', '오스테나이트', '페라이트',
+            '인장강도', '항복강도', '연신율', '굽힘',
+            '탄소', '망간', '실리콘', '크롬', '몰리브덴',
+            '열처리', '냉각', '가열', '템퍼링'
+        ]
+        
+        query_lower = query_text.lower()
+        claim_lower = claim_text.lower()
+        
+        common_terms = 0
+        for term in technical_terms:
+            if term in query_lower and term in claim_lower:
+                common_terms += 1
+        
+        # Bonus based on number of common technical terms
+        if common_terms > 0:
+            bonus = min(common_terms * 0.02, 0.1)  # Max 10% bonus
+        
+        return bonus
     
     def _extract_year(self, date_str: str) -> int:
         """Extract year from date string"""
