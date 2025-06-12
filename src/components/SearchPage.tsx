@@ -476,34 +476,36 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
-                        <div className="flex items-start mb-3">
+                        <div className="flex items-start mb-2">
                           <span className="text-lg mr-2">📋</span>
                           <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white leading-tight">
                             {patent.title}
                           </h3>
                         </div>
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 ml-7">
-                          <span className="font-medium flex items-center">
-                            🔍 ID: <span className="text-indigo-600 ml-1">{patent.patent_id}</span>
+                        <div className="flex flex-wrap gap-3 text-xs text-gray-500 dark:text-gray-500 ml-7 mb-3">
+                          <span className="font-normal flex items-center">
+                            🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
                           </span>
-                          <span className="font-medium flex items-center">
-                            🏢 출원인: <span className="text-purple-600 ml-1">{patent.applicant}</span>
+                          <span className="font-normal flex items-center">
+                            🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
                           </span>
-                          <span className="font-medium flex items-center">
-                            📅 출원년도: <span className="text-blue-600 ml-1">{patent.application_year}</span>
+                          <span className="font-normal flex items-center">
+                            📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
                           </span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-center ml-4">
-                        <CircularProgress percentage={patent.similarity_score} />
-                        <div className="text-xs text-gray-500 font-medium mt-1">
+                      <div className="flex flex-col items-center ml-6">
+                        <div className="transform scale-150">
+                          <CircularProgress percentage={patent.similarity_score} />
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 font-semibold mt-2">
                           유사도
                         </div>
                       </div>
                     </div>
                     
                     <div className="mb-4 ml-7">
-                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                      <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
                         {patent.claim_text.length > 150 
                           ? `${patent.claim_text.substring(0, 150)}...` 
                           : patent.claim_text}
