@@ -187,21 +187,48 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="flex items-center justify-center mb-6">
-            <Sparkles className="w-8 h-8 text-indigo-600 mr-3" />
-            <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <motion.div 
+            className="flex items-center justify-center mb-8"
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="mr-4"
+            >
+              🔍
+            </motion.div>
+            <h1 className="text-6xl lg:text-7xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
               특허 유사도 검색
             </h1>
-          </div>
-          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            AI 기반 특허 분석으로 유사한 특허를 빠르게 찾아보세요
-            <br />
-            <span className="text-lg text-indigo-600 dark:text-indigo-400 font-medium">
-              PDF 업로드 또는 청구항 텍스트 입력으로 시작하세요
-            </span>
-          </p>
+            <motion.div
+              animate={{ y: [-5, 5, -5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="ml-4"
+            >
+              ✨
+            </motion.div>
+          </motion.div>
+          <motion.p 
+            className="text-2xl lg:text-3xl text-gray-700 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            🤖 AI 기반 특허 분석으로 유사한 특허를 빠르게 찾아보세요
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-xl lg:text-2xl text-indigo-600 dark:text-indigo-400 font-medium"
+          >
+            📄 PDF 업로드 또는 📝 청구항 텍스트 입력으로 시작하세요
+          </motion.div>
         </motion.div>
 
         {/* 향상된 입력 섹션 */}
@@ -214,39 +241,52 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
           {/* 입력 방법 선택 */}
           <div className="flex flex-col md:flex-row gap-6 mb-10">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setInputMethod('text')}
-              className={`flex-1 p-8 rounded-2xl border-3 transition-all duration-300 ${
+              className={`flex-1 p-10 rounded-3xl border-3 transition-all duration-300 ${
                 inputMethod === 'text'
-                  ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 shadow-lg'
-                  : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md'
+                  ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 shadow-2xl'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-lg'
               }`}
             >
-              <FileText className="w-10 h-10 mx-auto mb-4 text-indigo-600" />
-              <p className="font-bold text-lg text-gray-800 dark:text-gray-200">청구항 텍스트 입력</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">직접 텍스트를 입력하여 검색</p>
+              <motion.div
+                animate={{ bounce: inputMethod === 'text' ? [0, -10, 0] : 0 }}
+                transition={{ duration: 0.6, repeat: inputMethod === 'text' ? Infinity : 0, repeatDelay: 2 }}
+                className="text-6xl mb-4"
+              >
+                📝
+              </motion.div>
+              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200 mb-2">청구항 텍스트 입력</p>
+              <p className="text-lg text-gray-600 dark:text-gray-400">직접 텍스트를 입력하여 검색</p>
             </motion.button>
             
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setInputMethod('pdf')}
-              className={`flex-1 p-8 rounded-2xl border-3 transition-all duration-300 ${
+              className={`flex-1 p-10 rounded-3xl border-3 transition-all duration-300 ${
                 inputMethod === 'pdf'
-                  ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 shadow-lg'
-                  : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md'
+                  ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 shadow-2xl'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-lg'
               }`}
             >
-              <Upload className="w-10 h-10 mx-auto mb-4 text-indigo-600" />
-              <p className="font-bold text-lg text-gray-800 dark:text-gray-200">PDF 업로드</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">PDF 파일에서 자동 추출</p>
+              <motion.div
+                animate={{ bounce: inputMethod === 'pdf' ? [0, -10, 0] : 0 }}
+                transition={{ duration: 0.6, repeat: inputMethod === 'pdf' ? Infinity : 0, repeatDelay: 2 }}
+                className="text-6xl mb-4"
+              >
+                📄
+              </motion.div>
+              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200 mb-2">PDF 업로드</p>
+              <p className="text-lg text-gray-600 dark:text-gray-400">PDF 파일에서 자동 추출</p>
             </motion.button>
           </div>
 
           {inputMethod === 'text' ? (
             <div>
-              <label className="block text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">
+              <label className="block text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 flex items-center">
+                <span className="text-3xl mr-3">📋</span>
                 특허 청구항 텍스트
               </label>
               <div className="relative">
@@ -275,16 +315,22 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                 className="hidden"
               />
               <motion.div
-                whileHover={{ scale: 1.01 }}
+                whileHover={{ scale: 1.02, y: -5 }}
                 onClick={() => fileInputRef.current?.click()}
-                className="border-3 border-dashed border-indigo-300 dark:border-indigo-600 rounded-2xl p-16 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/20 dark:to-blue-900/20"
+                className="border-3 border-dashed border-indigo-300 dark:border-indigo-600 rounded-3xl p-20 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/20 dark:to-blue-900/20"
               >
-                <Upload className="w-16 h-16 mx-auto mb-6 text-indigo-500" />
-                <p className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-3">
-                  PDF 파일을 클릭하여 업로드
+                <motion.div
+                  animate={{ y: [-10, 10, -10] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-8xl mb-8"
+                >
+                  📤
+                </motion.div>
+                <p className="text-3xl font-bold text-gray-700 dark:text-gray-300 mb-4">
+                  📄 PDF 파일을 클릭하여 업로드
                 </p>
-                <p className="text-lg text-gray-600 dark:text-gray-400">
-                  지원 형식: PDF (최대 10MB)
+                <p className="text-xl text-gray-600 dark:text-gray-400">
+                  ✅ 지원 형식: PDF (최대 10MB)
                 </p>
               </motion.div>
             </div>
@@ -301,20 +347,32 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
           )}
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleSearch}
             disabled={isLoading || !claimText.trim()}
-            className="w-full mt-8 px-8 py-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-2xl font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3"
+            className="w-full mt-10 px-10 py-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-3xl font-bold text-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-3xl transition-all duration-300 flex items-center justify-center space-x-4"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="text-3xl"
+                >
+                  ⏳
+                </motion.div>
                 <span>검색 중...</span>
               </>
             ) : (
               <>
-                <Search className="w-6 h-6" />
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="text-3xl"
+                >
+                  🔍
+                </motion.span>
                 <span>유사 특허 검색하기</span>
               </>
             )}
@@ -330,24 +388,46 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
             className="space-y-10"
           >
             {/* 차트 */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border border-white/20">
-              <div className="flex items-center space-x-3 mb-8">
-                <BarChart3 className="w-8 h-8 text-indigo-600" />
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl p-12 shadow-2xl border border-white/20">
+              <motion.div 
+                className="flex items-center space-x-4 mb-10"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-5xl"
+                >
+                  📊
+                </motion.span>
+                <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
                   유사도 분석 결과
                 </h2>
-              </div>
+              </motion.div>
               <div className="h-80">
                 <Bar data={chartData} options={chartOptions} />
               </div>
             </div>
 
             {/* 결과 목록 */}
-            <div className="grid gap-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                <Sparkles className="w-8 h-8 text-indigo-600 mr-3" />
+            <div className="grid gap-10">
+              <motion.h2 
+                className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white flex items-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <motion.span
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  className="text-5xl mr-4"
+                >
+                  ⭐
+                </motion.span>
                 유사 특허 목록 ({searchResults.length}개)
-              </h2>
+              </motion.h2>
               
               {searchResults.map((patent, index) => (
                 <motion.div
@@ -355,29 +435,45 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
+                  whileHover={{ y: -5, scale: 1.01 }}
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl hover:shadow-3xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
                 >
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex justify-between items-start mb-8">
                     <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-                        {patent.title}
-                      </h3>
-                      <div className="flex flex-wrap gap-6 text-lg text-gray-600 dark:text-gray-400">
-                        <span className="font-medium">ID: <span className="text-indigo-600">{patent.patent_id}</span></span>
-                        <span className="font-medium">출원인: <span className="text-purple-600">{patent.applicant}</span></span>
-                        <span className="font-medium">출원년도: <span className="text-blue-600">{patent.application_year}</span></span>
+                      <div className="flex items-start mb-6">
+                        <span className="text-3xl mr-3">📋</span>
+                        <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight">
+                          {patent.title}
+                        </h3>
+                      </div>
+                      <div className="flex flex-wrap gap-8 text-xl text-gray-600 dark:text-gray-400 ml-12">
+                        <span className="font-medium flex items-center">
+                          🔍 ID: <span className="text-indigo-600 ml-1">{patent.patent_id}</span>
+                        </span>
+                        <span className="font-medium flex items-center">
+                          🏢 출원인: <span className="text-purple-600 ml-1">{patent.applicant}</span>
+                        </span>
+                        <span className="font-medium flex items-center">
+                          📅 출원년도: <span className="text-blue-600 ml-1">{patent.application_year}</span>
+                        </span>
                       </div>
                     </div>
-                    <div className="text-right ml-6">
-                      <div className="text-4xl font-bold text-indigo-600 mb-1">
+                    <motion.div 
+                      className="text-right ml-8"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <div className="text-5xl font-bold text-indigo-600 mb-2">
                         {patent.similarity_score}%
                       </div>
-                      <div className="text-lg text-gray-500 font-medium">유사도</div>
-                    </div>
+                      <div className="text-xl text-gray-500 font-medium flex items-center">
+                        📈 유사도
+                      </div>
+                    </motion.div>
                   </div>
                   
-                  <div className="mb-6">
-                    <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+                  <div className="mb-8 ml-12">
+                    <p className="text-gray-700 dark:text-gray-300 text-xl leading-relaxed">
                       {patent.claim_text.length > 300 
                         ? `${patent.claim_text.substring(0, 300)}...` 
                         : patent.claim_text}
@@ -385,12 +481,12 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                   </div>
                   
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => onPatentSelect(patent)}
-                    className="flex items-center space-x-3 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-lg"
+                    className="flex items-center space-x-4 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-xl ml-12"
                   >
-                    <Eye className="w-5 h-5" />
+                    <span className="text-2xl">👁️</span>
                     <span>상세 분석 보기</span>
                   </motion.button>
                 </motion.div>
