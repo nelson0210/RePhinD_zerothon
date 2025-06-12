@@ -407,68 +407,121 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                 유사 특허 목록 ({searchResults.length}개)
               </motion.h2>
               
-              {searchResults.map((patent, index) => (
-                <motion.div
-                  key={patent.patent_id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  whileHover={{ y: -5, scale: 1.01 }}
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl hover:shadow-3xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
-                >
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="flex-1">
-                      <div className="flex items-start mb-6">
-                        <span className="text-3xl mr-3">📋</span>
-                        <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight">
-                          {patent.title}
-                        </h3>
-                      </div>
-                      <div className="flex flex-wrap gap-8 text-xl text-gray-600 dark:text-gray-400 ml-12">
-                        <span className="font-medium flex items-center">
-                          🔍 ID: <span className="text-indigo-600 ml-1">{patent.patent_id}</span>
-                        </span>
-                        <span className="font-medium flex items-center">
-                          🏢 출원인: <span className="text-purple-600 ml-1">{patent.applicant}</span>
-                        </span>
-                        <span className="font-medium flex items-center">
-                          📅 출원년도: <span className="text-blue-600 ml-1">{patent.application_year}</span>
-                        </span>
+              {searchResults.map((patent, index) => {
+                const CircularProgress = ({ percentage }: { percentage: number }) => {
+                  const radius = 35
+                  const circumference = 2 * Math.PI * radius
+                  const strokeDasharray = circumference
+                  const strokeDashoffset = circumference - (percentage / 100) * circumference
+
+                  return (
+                    <div className="relative w-20 h-20">
+                      <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        {/* Background circle */}
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r={radius}
+                          stroke="currentColor"
+                          strokeWidth="6"
+                          fill="none"
+                          className="text-gray-200 dark:text-gray-700"
+                        />
+                        {/* Progress circle */}
+                        <motion.circle
+                          cx="40"
+                          cy="40"
+                          r={radius}
+                          stroke="url(#gradient)"
+                          strokeWidth="6"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeDasharray={strokeDasharray}
+                          initial={{ strokeDashoffset: circumference }}
+                          animate={{ strokeDashoffset }}
+                          transition={{ duration: 2, delay: index * 0.2, ease: "easeOut" }}
+                        />
+                        {/* Gradient definition */}
+                        <defs>
+                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#3B82F6" />
+                            <stop offset="50%" stopColor="#8B5CF6" />
+                            <stop offset="100%" stopColor="#06B6D4" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      {/* Percentage text */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, delay: index * 0.2 + 1.5 }}
+                          className="text-sm font-bold text-indigo-600 dark:text-indigo-400"
+                        >
+                          {percentage}%
+                        </motion.span>
                       </div>
                     </div>
-                    <motion.div 
-                      className="text-right ml-8"
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <div className="text-5xl font-bold text-indigo-600 mb-2">
-                        {patent.similarity_score}%
-                      </div>
-                      <div className="text-xl text-gray-500 font-medium flex items-center">
-                        📈 유사도
-                      </div>
-                    </motion.div>
-                  </div>
-                  
-                  <div className="mb-8 ml-12">
-                    <p className="text-gray-700 dark:text-gray-300 text-xl leading-relaxed">
-                      {patent.claim_text.length > 300 
-                        ? `${patent.claim_text.substring(0, 300)}...` 
-                        : patent.claim_text}
-                    </p>
-                  </div>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => onPatentSelect(patent)}
-                    className="flex items-center space-x-4 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-xl ml-12"
+                  )
+                }
+
+                return (
+                  <motion.div
+                    key={patent.patent_id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
                   >
-                    <span className="text-2xl">👁️</span>
-                    <span>상세 분석 보기</span>
-                  </motion.button>
-                </motion.div>
-              ))}
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-start mb-3">
+                          <span className="text-lg mr-2">📋</span>
+                          <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white leading-tight">
+                            {patent.title}
+                          </h3>
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 ml-7">
+                          <span className="font-medium flex items-center">
+                            🔍 ID: <span className="text-indigo-600 ml-1">{patent.patent_id}</span>
+                          </span>
+                          <span className="font-medium flex items-center">
+                            🏢 출원인: <span className="text-purple-600 ml-1">{patent.applicant}</span>
+                          </span>
+                          <span className="font-medium flex items-center">
+                            📅 출원년도: <span className="text-blue-600 ml-1">{patent.application_year}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-center ml-4">
+                        <CircularProgress percentage={patent.similarity_score} />
+                        <div className="text-xs text-gray-500 font-medium mt-1">
+                          유사도
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4 ml-7">
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        {patent.claim_text.length > 150 
+                          ? `${patent.claim_text.substring(0, 150)}...` 
+                          : patent.claim_text}
+                      </p>
+                    </div>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.03, y: -1 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => onPatentSelect(patent)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-sm ml-7"
+                    >
+                      <span className="text-lg">👁️</span>
+                      <span>상세 분석 보기</span>
+                    </motion.button>
+                  </motion.div>
+                )
+              })}
             </div>
           </motion.div>
         )}
