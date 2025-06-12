@@ -409,64 +409,57 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
               
               {searchResults.map((patent, index) => {
                 const CircularProgress = ({ percentage }: { percentage: number }) => {
-                  const radius = 28
+                  const radius = 35
                   const circumference = 2 * Math.PI * radius
                   const strokeDasharray = circumference
                   const strokeDashoffset = circumference - (percentage / 100) * circumference
 
                   return (
-                    <div className="relative w-16 h-16">
-                      <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
-                        {/* Background circle with shadow effect */}
+                    <div className="relative w-20 h-20">
+                      <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        {/* Background circle */}
                         <circle
-                          cx="32"
-                          cy="32"
+                          cx="40"
+                          cy="40"
                           r={radius}
                           stroke="currentColor"
-                          strokeWidth="4"
+                          strokeWidth="6"
                           fill="none"
-                          className="text-gray-300 dark:text-gray-600"
+                          className="text-gray-200 dark:text-gray-700"
                         />
-                        {/* Progress circle with enhanced gradient */}
+                        {/* Progress circle */}
                         <motion.circle
-                          cx="32"
-                          cy="32"
+                          cx="40"
+                          cy="40"
                           r={radius}
-                          stroke="url(#enhancedGradient)"
-                          strokeWidth="4"
+                          stroke="url(#gradient)"
+                          strokeWidth="6"
                           fill="none"
                           strokeLinecap="round"
                           strokeDasharray={strokeDasharray}
                           initial={{ strokeDashoffset: circumference }}
                           animate={{ strokeDashoffset }}
-                          transition={{ duration: 2.5, delay: index * 0.15, ease: "easeOut" }}
-                          filter="url(#glow)"
+                          transition={{ duration: 2, delay: index * 0.2, ease: "easeOut" }}
                         />
-                        {/* Enhanced gradient definition */}
+                        {/* Gradient definition */}
                         <defs>
-                          <linearGradient id="enhancedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#4F46E5" />
-                            <stop offset="30%" stopColor="#7C3AED" />
-                            <stop offset="70%" stopColor="#EC4899" />
+                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#3B82F6" />
+                            <stop offset="50%" stopColor="#8B5CF6" />
                             <stop offset="100%" stopColor="#06B6D4" />
                           </linearGradient>
-                          <filter id="glow">
-                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                            <feMerge> 
-                              <feMergeNode in="coloredBlur"/>
-                              <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                          </filter>
                         </defs>
                       </svg>
-                      {/* Center dot indicator */}
+                      {/* Percentage text */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0 }}
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0.5 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.8, delay: index * 0.2 + 2 }}
-                          className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-lg"
-                        />
+                          transition={{ duration: 0.5, delay: index * 0.2 + 1.5 }}
+                          className="text-sm font-bold text-indigo-600 dark:text-indigo-400"
+                        >
+                          {percentage}%
+                        </motion.span>
                       </div>
                     </div>
                   )
@@ -478,87 +471,81 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 border border-white/30 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-white/95 dark:hover:bg-gray-800/95"
                   >
                     <div className="flex">
                       {/* Left content area */}
-                      <div className="flex-1 pr-8">
-                        <div className="mb-4">
-                          <div className="flex items-start mb-3">
-                            <span className="text-xl mr-3">📋</span>
-                            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                      <div className="flex-1 pr-10">
+                        <div className="mb-6">
+                          <div className="flex items-start mb-4">
+                            <motion.span 
+                              animate={{ rotate: [0, 10, -10, 0] }}
+                              transition={{ duration: 2, repeat: Infinity, delay: index * 0.5 }}
+                              className="text-2xl mr-4 mt-1"
+                            >
+                              📋
+                            </motion.span>
+                            <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white leading-tight hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
                               {patent.title}
                             </h3>
                           </div>
-                          <div className="flex flex-wrap gap-4 text-lg text-gray-500 dark:text-gray-500 ml-8 mb-4">
-                            <span className="font-normal flex items-center">
-                              🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
-                            </span>
-                            <span className="font-normal flex items-center">
-                              🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
-                            </span>
-                            <span className="font-normal flex items-center">
-                              📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
-                            </span>
+                          <div className="flex flex-wrap gap-6 text-lg text-gray-600 dark:text-gray-400 ml-12 mb-6">
+                            <motion.span 
+                              whileHover={{ scale: 1.05 }}
+                              className="font-medium flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-all duration-300"
+                            >
+                              🔍 ID: <span className="text-gray-700 dark:text-gray-300 ml-2 font-bold">{patent.patent_id}</span>
+                            </motion.span>
+                            <motion.span 
+                              whileHover={{ scale: 1.05 }}
+                              className="font-medium flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900 transition-all duration-300"
+                            >
+                              🏢 출원인: <span className="text-gray-700 dark:text-gray-300 ml-2 font-bold">{patent.applicant}</span>
+                            </motion.span>
+                            <motion.span 
+                              whileHover={{ scale: 1.05 }}
+                              className="font-medium flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900 transition-all duration-300"
+                            >
+                              📅 출원년도: <span className="text-gray-700 dark:text-gray-300 ml-2 font-bold">{patent.application_year}</span>
+                            </motion.span>
                           </div>
                         </div>
                         
-                        <div className="mb-6 ml-8">
-                          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-                            {patent.claim_text.length > 150 
-                              ? `${patent.claim_text.substring(0, 150)}...` 
-                              : patent.claim_text}
-                          </p>
+                        <div className="mb-8 ml-12">
+                          <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-700 dark:to-blue-900 p-6 rounded-2xl border-l-4 border-indigo-500">
+                            <p className="text-gray-800 dark:text-gray-200 text-lg leading-relaxed font-medium">
+                              {patent.claim_text.length > 200 
+                                ? `${patent.claim_text.substring(0, 200)}...` 
+                                : patent.claim_text}
+                            </p>
+                          </div>
                         </div>
                         
                         <motion.button
-                          whileHover={{ scale: 1.03, y: -1 }}
-                          whileTap={{ scale: 0.97 }}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => onPatentSelect(patent)}
-                          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-base ml-8"
+                          className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-2xl hover:from-indigo-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-300 font-bold text-lg ml-12 shadow-lg hover:shadow-xl"
                         >
-                          <span className="text-xl">👁️</span>
+                          <motion.span 
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className="text-2xl"
+                          >
+                            👁️
+                          </motion.span>
                           <span>상세 분석 보기</span>
                         </motion.button>
                       </div>
                       
                       {/* Right similarity chart area */}
-                      <div className="w-56 flex flex-col items-center justify-center">
-                        <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-3xl p-8 shadow-lg border-2 border-indigo-200/50 dark:border-indigo-700/50 backdrop-blur-sm">
-                          <div className="text-center mb-6">
-                            <div className="text-lg font-bold text-indigo-700 dark:text-indigo-300 mb-2">
-                              📊 유사도 분석
-                            </div>
-                            <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
-                          </div>
-                          
-                          <div className="flex justify-center mb-4">
-                            <div className="transform scale-150">
-                              <CircularProgress percentage={patent.similarity_score} />
-                            </div>
-                          </div>
-                          
-                          <div className="text-center">
-                            <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400 mb-1">
-                              {patent.similarity_score}%
-                            </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                              일치율
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 flex justify-center">
-                            <div className={`px-4 py-2 rounded-full text-xs font-bold ${
-                              patent.similarity_score >= 80 
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                                : patent.similarity_score >= 60
-                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                            }`}>
-                              {patent.similarity_score >= 80 ? '🎯 높음' : patent.similarity_score >= 60 ? '⚡ 보통' : '📉 낮음'}
-                            </div>
-                          </div>
+                      <div className="w-48 flex flex-col items-center justify-center space-y-6">
+                        <div className="text-2xl text-gray-600 dark:text-gray-400 font-bold">
+                          유사도
+                        </div>
+                        <div className="transform scale-200">
+                          <CircularProgress percentage={patent.similarity_score} />
                         </div>
                       </div>
                     </div>
