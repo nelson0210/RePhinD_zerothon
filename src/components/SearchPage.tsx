@@ -409,57 +409,64 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
               
               {searchResults.map((patent, index) => {
                 const CircularProgress = ({ percentage }: { percentage: number }) => {
-                  const radius = 35
+                  const radius = 28
                   const circumference = 2 * Math.PI * radius
                   const strokeDasharray = circumference
                   const strokeDashoffset = circumference - (percentage / 100) * circumference
 
                   return (
-                    <div className="relative w-20 h-20">
-                      <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
-                        {/* Background circle */}
+                    <div className="relative w-16 h-16">
+                      <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
+                        {/* Background circle with shadow effect */}
                         <circle
-                          cx="40"
-                          cy="40"
+                          cx="32"
+                          cy="32"
                           r={radius}
                           stroke="currentColor"
-                          strokeWidth="6"
+                          strokeWidth="4"
                           fill="none"
-                          className="text-gray-200 dark:text-gray-700"
+                          className="text-gray-300 dark:text-gray-600"
                         />
-                        {/* Progress circle */}
+                        {/* Progress circle with enhanced gradient */}
                         <motion.circle
-                          cx="40"
-                          cy="40"
+                          cx="32"
+                          cy="32"
                           r={radius}
-                          stroke="url(#gradient)"
-                          strokeWidth="6"
+                          stroke="url(#enhancedGradient)"
+                          strokeWidth="4"
                           fill="none"
                           strokeLinecap="round"
                           strokeDasharray={strokeDasharray}
                           initial={{ strokeDashoffset: circumference }}
                           animate={{ strokeDashoffset }}
-                          transition={{ duration: 2, delay: index * 0.2, ease: "easeOut" }}
+                          transition={{ duration: 2.5, delay: index * 0.15, ease: "easeOut" }}
+                          filter="url(#glow)"
                         />
-                        {/* Gradient definition */}
+                        {/* Enhanced gradient definition */}
                         <defs>
-                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#3B82F6" />
-                            <stop offset="50%" stopColor="#8B5CF6" />
+                          <linearGradient id="enhancedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#4F46E5" />
+                            <stop offset="30%" stopColor="#7C3AED" />
+                            <stop offset="70%" stopColor="#EC4899" />
                             <stop offset="100%" stopColor="#06B6D4" />
                           </linearGradient>
+                          <filter id="glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge> 
+                              <feMergeNode in="coloredBlur"/>
+                              <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                          </filter>
                         </defs>
                       </svg>
-                      {/* Percentage text */}
+                      {/* Center dot indicator */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <motion.span
-                          initial={{ opacity: 0, scale: 0.5 }}
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, delay: index * 0.2 + 1.5 }}
-                          className="text-sm font-bold text-indigo-600 dark:text-indigo-400"
-                        >
-                          {percentage}%
-                        </motion.span>
+                          transition={{ duration: 0.8, delay: index * 0.2 + 2 }}
+                          className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-lg"
+                        />
                       </div>
                     </div>
                   )
@@ -517,12 +524,41 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                       </div>
                       
                       {/* Right similarity chart area */}
-                      <div className="w-48 flex flex-col items-center justify-center">
-                        <div className="text-xl text-gray-600 dark:text-gray-400 font-semibold mb-4">
-                          유사도
-                        </div>
-                        <div className="transform scale-200">
-                          <CircularProgress percentage={patent.similarity_score} />
+                      <div className="w-56 flex flex-col items-center justify-center">
+                        <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-3xl p-8 shadow-lg border-2 border-indigo-200/50 dark:border-indigo-700/50 backdrop-blur-sm">
+                          <div className="text-center mb-6">
+                            <div className="text-lg font-bold text-indigo-700 dark:text-indigo-300 mb-2">
+                              📊 유사도 분석
+                            </div>
+                            <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
+                          </div>
+                          
+                          <div className="flex justify-center mb-4">
+                            <div className="transform scale-150">
+                              <CircularProgress percentage={patent.similarity_score} />
+                            </div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400 mb-1">
+                              {patent.similarity_score}%
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                              일치율
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 flex justify-center">
+                            <div className={`px-4 py-2 rounded-full text-xs font-bold ${
+                              patent.similarity_score >= 80 
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                                : patent.similarity_score >= 60
+                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>
+                              {patent.similarity_score >= 80 ? '🎯 높음' : patent.similarity_score >= 60 ? '⚡ 보통' : '📉 낮음'}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
