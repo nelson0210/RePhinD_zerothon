@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FileText, Calendar, User, Loader2, ArrowLeft, Brain } from 'lucide-react'
-
-interface Patent {
-  patent_id: string
-  title: string
-  applicant: string
-  application_year: number
-  similarity_score: number
-  claim_text: string
-}
+import { Patent } from '../types'
 
 interface SummaryPageProps {
   patent: Patent

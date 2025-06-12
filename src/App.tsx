@@ -5,10 +5,11 @@ import SearchPage from './components/SearchPage'
 import SummaryPage from './components/SummaryPage'
 import Navigation from './components/Navigation'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { Patent } from './types'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'search' | 'summary'>('landing')
-  const [selectedPatent, setSelectedPatent] = useState(null)
+  const [selectedPatent, setSelectedPatent] = useState<Patent | null>(null)
 
   return (
     <ThemeProvider>

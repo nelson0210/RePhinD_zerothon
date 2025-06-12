@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import { Patent } from '../types'
 
 // Register Chart.js components
 ChartJS.register(
@@ -21,15 +22,6 @@ ChartJS.register(
   Tooltip,
   Legend
 )
-
-interface Patent {
-  patent_id: string
-  title: string
-  applicant: string
-  application_year: number
-  similarity_score: number
-  claim_text: string
-}
 
 interface SearchPageProps {
   onPatentSelect: (patent: Patent) => void
