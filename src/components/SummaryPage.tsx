@@ -114,18 +114,18 @@ export default function SummaryPage({ patent }: SummaryPageProps) {
                   {patent.title}
                 </h1>
                 
-                <div className="flex flex-wrap gap-8 text-lg font-medium text-gray-800 dark:text-gray-200">
+                <div className="flex flex-wrap gap-8 text-xl font-medium">
                   <div className="flex items-center space-x-3">
                     <FileText className="w-6 h-6 text-indigo-600" />
-                    <span className="text-indigo-700 dark:text-indigo-300">{patent.patent_id}</span>
+                    <span className="text-white">{patent.patent_id}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <User className="w-6 h-6 text-purple-600" />
-                    <span className="text-purple-700 dark:text-purple-300">{patent.applicant}</span>
+                    <span className="text-white">{patent.applicant}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Calendar className="w-6 h-6 text-blue-600" />
-                    <span className="text-blue-700 dark:text-blue-300">{patent.application_year}</span>
+                    <span className="text-white">{patent.application_year}</span>
                   </div>
                 </div>
               </div>
