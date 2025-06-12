@@ -479,53 +479,57 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
                     whileHover={{ y: -3, scale: 1.01 }}
-                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
+                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
                   >
-                    <div className="flex">
-                      {/* Left content area */}
-                      <div className="flex-1 pr-8">
-                        <div className="mb-4">
-                          <div className="flex items-start mb-3">
-                            <span className="text-xl mr-3">📋</span>
-                            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                              {patent.title}
-                            </h3>
+                    <div className="flex items-stretch min-h-[280px]">
+                      {/* Left content area - 60% width */}
+                      <div className="flex-1 max-w-[60%] pr-6 flex flex-col justify-between">
+                        <div className="flex-1">
+                          <div className="mb-3">
+                            <div className="flex items-start mb-2">
+                              <span className="text-xl mr-3">📋</span>
+                              <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                                {patent.title}
+                              </h3>
+                            </div>
+                            <div className="flex flex-wrap gap-4 text-lg text-gray-500 dark:text-gray-500 ml-8 mb-3">
+                              <span className="font-normal flex items-center">
+                                🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
+                              </span>
+                              <span className="font-normal flex items-center">
+                                🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
+                              </span>
+                              <span className="font-normal flex items-center">
+                                📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex flex-wrap gap-4 text-lg text-gray-500 dark:text-gray-500 ml-8 mb-4">
-                            <span className="font-normal flex items-center">
-                              🔍 ID: <span className="text-gray-400 ml-1">{patent.patent_id}</span>
-                            </span>
-                            <span className="font-normal flex items-center">
-                              🏢 출원인: <span className="text-gray-400 ml-1">{patent.applicant}</span>
-                            </span>
-                            <span className="font-normal flex items-center">
-                              📅 출원년도: <span className="text-gray-400 ml-1">{patent.application_year}</span>
-                            </span>
+                          
+                          <div className="mb-4 ml-8 flex-1">
+                            <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+                              {patent.claim_text.length > 200 
+                                ? `${patent.claim_text.substring(0, 200)}...` 
+                                : patent.claim_text}
+                            </p>
                           </div>
                         </div>
                         
-                        <div className="mb-6 ml-8">
-                          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-                            {patent.claim_text.length > 150 
-                              ? `${patent.claim_text.substring(0, 150)}...` 
-                              : patent.claim_text}
-                          </p>
+                        <div className="ml-8">
+                          <motion.button
+                            whileHover={{ scale: 1.03, y: -1 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => onPatentSelect(patent)}
+                            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-base"
+                          >
+                            <span className="text-xl">👁️</span>
+                            <span>상세 분석 보기</span>
+                          </motion.button>
                         </div>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.03, y: -1 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => onPatentSelect(patent)}
-                          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-base ml-8"
-                        >
-                          <span className="text-xl">👁️</span>
-                          <span>상세 분석 보기</span>
-                        </motion.button>
                       </div>
                       
-                      {/* Right similarity chart area */}
-                      <div className="w-56 flex flex-col items-center justify-center">
-                        <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-3xl p-8 shadow-lg border-2 border-indigo-200/50 dark:border-indigo-700/50 backdrop-blur-sm">
+                      {/* Right similarity chart area - 40% width */}
+                      <div className="flex-1 max-w-[40%] flex items-center justify-center">
+                        <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-3xl p-8 shadow-lg border-2 border-indigo-200/50 dark:border-indigo-700/50 backdrop-blur-sm w-full max-w-[320px]">
                           <div className="text-center mb-6">
                             <div className="text-lg font-bold text-indigo-700 dark:text-indigo-300 mb-2">
                               📊 유사도 분석
@@ -533,23 +537,23 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                             <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
                           </div>
                           
-                          <div className="flex justify-center mb-4">
-                            <div className="transform scale-150">
+                          <div className="flex justify-center mb-6">
+                            <div className="transform scale-175">
                               <CircularProgress percentage={patent.similarity_score} />
                             </div>
                           </div>
                           
                           <div className="text-center">
-                            <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400 mb-1">
+                            <div className="text-4xl font-black text-indigo-600 dark:text-indigo-400 mb-2">
                               {patent.similarity_score}%
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                            <div className="text-base text-gray-600 dark:text-gray-400 font-medium mb-4">
                               일치율
                             </div>
                           </div>
                           
-                          <div className="mt-4 flex justify-center">
-                            <div className={`px-4 py-2 rounded-full text-xs font-bold ${
+                          <div className="flex justify-center">
+                            <div className={`px-5 py-2 rounded-full text-sm font-bold ${
                               patent.similarity_score >= 80 
                                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
                                 : patent.similarity_score >= 60
