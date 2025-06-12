@@ -471,114 +471,54 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
-                    whileHover={{ y: -8, scale: 1.03 }}
-                    className="relative bg-gradient-to-br from-white/95 via-white/90 to-blue-50/30 dark:from-gray-800/95 dark:via-gray-800/90 dark:to-blue-900/20 backdrop-blur-xl rounded-3xl p-10 shadow-2xl hover:shadow-4xl transition-all duration-700 border-2 border-gradient-to-r from-indigo-200/30 to-purple-200/30 dark:from-indigo-600/20 dark:to-purple-600/20 hover:border-indigo-400/50 dark:hover:border-indigo-400/50 overflow-hidden group"
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-indigo-200 dark:hover:border-indigo-700"
                   >
-                    {/* Decorative gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                    
-                    {/* Decorative floating elements */}
-                    <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        className="text-4xl text-indigo-600"
-                      >
-                        ✨
-                      </motion.div>
-                    </div>
-                    
-                    <div className="relative z-10 flex">
-                      {/* Left content area */}
-                      <div className="flex-1 pr-10">
-                        <div className="mb-6">
-                          <div className="flex items-start mb-4">
-                            <motion.span 
-                              animate={{ rotate: [0, 10, -10, 0] }}
-                              transition={{ duration: 2, repeat: Infinity, delay: index * 0.5 }}
-                              className="text-2xl mr-4 mt-1"
-                            >
-                              📋
-                            </motion.span>
-                            <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white leading-tight hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
-                              {patent.title}
-                            </h3>
-                          </div>
-                          <div className="flex flex-wrap gap-6 text-lg text-gray-600 dark:text-gray-400 ml-12 mb-6">
-                            <motion.span 
-                              whileHover={{ scale: 1.05 }}
-                              className="font-medium flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-all duration-300"
-                            >
-                              🔍 ID: <span className="text-gray-700 dark:text-gray-300 ml-2 font-bold">{patent.patent_id}</span>
-                            </motion.span>
-                            <motion.span 
-                              whileHover={{ scale: 1.05 }}
-                              className="font-medium flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900 transition-all duration-300"
-                            >
-                              🏢 출원인: <span className="text-gray-700 dark:text-gray-300 ml-2 font-bold">{patent.applicant}</span>
-                            </motion.span>
-                            <motion.span 
-                              whileHover={{ scale: 1.05 }}
-                              className="font-medium flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900 transition-all duration-300"
-                            >
-                              📅 출원년도: <span className="text-gray-700 dark:text-gray-300 ml-2 font-bold">{patent.application_year}</span>
-                            </motion.span>
-                          </div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-start mb-3">
+                          <span className="text-lg mr-2">📋</span>
+                          <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white leading-tight">
+                            {patent.title}
+                          </h3>
                         </div>
-                        
-                        <div className="mb-8 ml-12">
-                          <div className="bg-gradient-to-br from-indigo-50/80 via-blue-50/60 to-purple-50/40 dark:from-indigo-900/30 dark:via-blue-900/20 dark:to-purple-900/10 p-8 rounded-3xl border-l-6 border-gradient-to-b from-indigo-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm">
-                            <div className="flex items-start">
-                              <motion.span
-                                animate={{ scale: [1, 1.1, 1] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                                className="text-2xl mr-4 mt-1 opacity-60"
-                              >
-                                📝
-                              </motion.span>
-                              <p className="text-gray-800 dark:text-gray-100 text-xl leading-relaxed font-medium tracking-wide">
-                                {patent.claim_text.length > 200 
-                                  ? `${patent.claim_text.substring(0, 200)}...` 
-                                  : patent.claim_text}
-                              </p>
-                            </div>
-                          </div>
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 ml-7">
+                          <span className="font-medium flex items-center">
+                            🔍 ID: <span className="text-indigo-600 ml-1">{patent.patent_id}</span>
+                          </span>
+                          <span className="font-medium flex items-center">
+                            🏢 출원인: <span className="text-purple-600 ml-1">{patent.applicant}</span>
+                          </span>
+                          <span className="font-medium flex items-center">
+                            📅 출원년도: <span className="text-blue-600 ml-1">{patent.application_year}</span>
+                          </span>
                         </div>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.08, y: -4 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => onPatentSelect(patent)}
-                          className="flex items-center space-x-4 px-10 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-3xl hover:from-indigo-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-500 font-bold text-xl ml-12 shadow-2xl hover:shadow-3xl border-2 border-white/20 hover:border-white/40 backdrop-blur-sm group"
-                        >
-                          <motion.span 
-                            animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="text-3xl group-hover:scale-125 transition-transform duration-300"
-                          >
-                            👁️
-                          </motion.span>
-                          <span className="tracking-wide">상세 분석 보기</span>
-                          <motion.span
-                            animate={{ x: [0, 5, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                            className="text-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
-                          >
-                            →
-                          </motion.span>
-                        </motion.button>
                       </div>
-                      
-                      {/* Right similarity chart area */}
-                      <div className="w-48 flex flex-col items-center justify-start space-y-2 pt-4">
-                        <div className="text-3xl text-indigo-600 dark:text-indigo-400 font-extrabold tracking-wide">
+                      <div className="flex flex-col items-center ml-4">
+                        <CircularProgress percentage={patent.similarity_score} />
+                        <div className="text-xs text-gray-500 font-medium mt-1">
                           유사도
                         </div>
-                        <div className="transform scale-200 mt-4">
-                          <CircularProgress percentage={patent.similarity_score} />
-                        </div>
                       </div>
                     </div>
+                    
+                    <div className="mb-4 ml-7">
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        {patent.claim_text.length > 150 
+                          ? `${patent.claim_text.substring(0, 150)}...` 
+                          : patent.claim_text}
+                      </p>
+                    </div>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.03, y: -1 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => onPatentSelect(patent)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-medium text-sm ml-7"
+                    >
+                      <span className="text-lg">👁️</span>
+                      <span>상세 분석 보기</span>
+                    </motion.button>
                   </motion.div>
                 )
               })}
