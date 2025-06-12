@@ -387,29 +387,7 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
             transition={{ delay: 0.2 }}
             className="space-y-10"
           >
-            {/* 차트 */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl p-12 shadow-2xl border border-white/20">
-              <motion.div 
-                className="flex items-center space-x-4 mb-10"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <motion.span
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-5xl"
-                >
-                  📊
-                </motion.span>
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
-                  유사도 분석 결과
-                </h2>
-              </motion.div>
-              <div className="h-80">
-                <Bar data={chartData} options={chartOptions} />
-              </div>
-            </div>
+            
 
             {/* 결과 목록 */}
             <div className="grid gap-10">
