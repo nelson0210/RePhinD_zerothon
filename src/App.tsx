@@ -10,6 +10,7 @@ import { Patent } from './types'
 function App() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'search' | 'summary'>('landing')
   const [selectedPatent, setSelectedPatent] = useState<Patent | null>(null)
+  const [searchClaimText, setSearchClaimText] = useState<string>('')
 
   return (
     <ThemeProvider>
@@ -38,8 +39,9 @@ function App() {
               transition={{ duration: 0.5 }}
             >
               <SearchPage 
-                onPatentSelect={(patent) => {
+                onPatentSelect={(patent, claimText) => {
                   setSelectedPatent(patent)
+                  setSearchClaimText(claimText)
                   setCurrentPage('summary')
                 }}
               />
@@ -54,7 +56,7 @@ function App() {
               exit={{ opacity: 0, scale: 1.05 }}
               transition={{ duration: 0.5 }}
             >
-              <SummaryPage patent={selectedPatent} />
+              <SummaryPage patent={selectedPatent} searchClaimText={searchClaimText} />
             </motion.div>
           )}
         </AnimatePresence>

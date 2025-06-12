@@ -25,7 +25,7 @@ ChartJS.register(
 )
 
 interface SearchPageProps {
-  onPatentSelect: (patent: Patent) => void
+  onPatentSelect: (patent: Patent, claimText: string) => void
 }
 
 export default function SearchPage({ onPatentSelect }: SearchPageProps) {
@@ -440,7 +440,7 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                       backgroundColor: "rgba(75, 85, 99, 0.8)",
                       transition: { duration: 0.2 }
                     }}
-                    onClick={() => onPatentSelect(patent)}
+                    onClick={() => onPatentSelect(patent, claimText)}
                     className="bg-gray-700/50 hover:bg-gray-600/50 rounded-xl p-4 cursor-pointer transition-all duration-300 border border-gray-600/50 hover:border-gray-500"
                   >
                     <div className="flex items-center">
@@ -450,7 +450,7 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                       </div>
 
                       {/* 아이콘과 특허 정보 */}
-                      <div className="flex items-center space-x-3 min-w-0 flex-shrink-0" style={{ width: '280px' }}>
+                      <div className="flex items-center space-x-3 min-w-0 flex-shrink-0" style={{ width: '320px' }}>
                         <div className="w-6 h-6 bg-yellow-500 rounded flex items-center justify-center flex-shrink-0">
                           <span className="text-white text-xs">⚡</span>
                         </div>
@@ -464,6 +464,13 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                         </div>
                       </div>
 
+                      {/* 제품군 */}
+                      <div className="w-20 flex-shrink-0 text-center">
+                        <span className="text-blue-400 font-medium text-sm px-2 py-1 bg-blue-900/30 rounded-md">
+                          {patent.product_group || 'N/A'}
+                        </span>
+                      </div>
+
                       {/* 진행률 바 */}
                       <BarProgress percentage={patent.similarity_score} />
 
@@ -475,7 +482,7 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                           transition={{ delay: index * 0.1 + 1.2 }}
                           className="text-red-400 font-bold text-sm"
                         >
-                          {patent.similarity_score}%
+                          {patent.similarity_score.toFixed(1)}%
                         </motion.span>
                       </div>
                     </div>

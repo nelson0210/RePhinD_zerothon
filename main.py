@@ -191,6 +191,26 @@ async def search_similar_patents(request: Dict[str, Any]):
         print(f"Error in search: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/get-claim-text")
+async def get_claim_text(patent_id: str):
+    """Get claim text for a specific patent ID from the database"""
+    try:
+        if rag_system is None:
+            raise HTTPException(status_code=503, detail="RAG system not available")
+        
+        # Get the patent data from RAG system
+        claim_text = rag_system.get_claim_text_by_patent_id(patent_id)
+        
+        if not claim_text:
+            raise HTTPException(status_code=404, detail=f"Patent with ID {patent_id} not found")
+        
+        return {"patent_id": patent_id, "claim_text": claim_text}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error getting claim text: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/summarize-patent")
 async def summarize_patent(request: Dict[str, Any]):
     """Generate RAG-enhanced AI summary for a patent"""
@@ -256,7 +276,7 @@ Please provide a comprehensive patent summary using the following information:
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500,
-            temperature=0.3
+            temperature=0.1
         )
         
         summary = response.choices[0].message.content
@@ -275,4 +295,4 @@ Please provide a comprehensive patent summary using the following information:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)

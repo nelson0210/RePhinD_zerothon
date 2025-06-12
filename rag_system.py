@@ -15,7 +15,7 @@ class PatentRAGSystem:
     RAG (Retrieval-Augmented Generation) system for patent analysis
     """
     
-    def __init__(self, csv_path: str = "data/patent_db_수정_csv_10개.csv", 
+    def __init__(self, csv_path: str = "data/patent_db_수정.csv", 
                  model_name: str = "all-MiniLM-L6-v2"):
         self.csv_path = csv_path
         self.model_name = model_name
@@ -78,9 +78,10 @@ class PatentRAGSystem:
     
     def create_combined_text(self, row):
         """Create combined text for embedding from patent data"""
-        # Combine title, claim, and keywords
+        # Combine title, claim, keywords, and product group
         title = str(row['발명의 명칭']) if pd.notna(row['발명의 명칭']) else ""
         claim = str(row['청구항1']) if pd.notna(row['청구항1']) else ""
+        product_group = str(row['제품군']) if pd.notna(row['제품군']) else ""
         
         # Extract keywords from parsed JSON
         keywords = []
@@ -89,8 +90,8 @@ class PatentRAGSystem:
         
         keywords_text = " ".join(keywords)
         
-        # Combine all text
-        combined_text = f"제목: {title}\n청구항: {claim}\n키워드: {keywords_text}"
+        # Combine all text including product group
+        combined_text = f"제목: {title}\n청구항: {claim}\n키워드: {keywords_text}\n제품군: {product_group}"
         return combined_text
     
     def generate_embeddings(self):
@@ -176,6 +177,7 @@ class PatentRAGSystem:
                     "similarity_score": float(similarity * 100),  # Convert to percentage
                     "claim_text": claim_text,
                     "country_code": str(patent.get('국가코드', 'KR')),
+                    "product_group": str(patent.get('제품군', '')),
                     "keywords": enhanced_keywords
                 }
                 results.append(result)
@@ -217,12 +219,7 @@ class PatentRAGSystem:
             (r'Mo\s*:\s*([\d.~%\s\w이상하내지]+)', 'Mo'),
             (r'Ti\s*:\s*([\d.~%\s\w이상하내지]+)', 'Ti'),
             (r'Nb\s*:\s*([\d.~%\s\w이상하내지]+)', 'Nb'),
-            (r'V\s*:\s*([\d.~%\s\w이상하내지]+)', 'V'),
-            (r'Cu\s*:\s*([\d.~%\s\w이상하내지]+)', 'Cu'),
-            (r'Ni\s*:\s*([\d.~%\s\w이상하내지]+)', 'Ni'),
-            (r'B\s*:\s*([\d.~%\s\w이상하내지]+)', 'B'),
-            (r'N\s*:\s*([\d.~%\s\w이상하내지]+)', 'N'),
-            (r'Al\s*:\s*([\d.~%\s\w이상하내지]+)', 'Al'),
+            
             (r'(?:탄소|carbon)\s*\(?\s*C\s*\)?\s*[:\s]*([\d.~%\s\w이상하내지]+)', 'C'),
             (r'(?:실리콘|silicon)\s*\(?\s*Si\s*\)?\s*[:\s]*([\d.~%\s\w이상하내지]+)', 'Si'),
             (r'(?:망간|manganese)\s*\(?\s*Mn\s*\)?\s*[:\s]*([\d.~%\s\w이상하내지]+)', 'Mn'),
@@ -363,6 +360,32 @@ class PatentRAGSystem:
         }
         
         return stats
+    
+    def get_claim_text_by_patent_id(self, patent_id: str) -> str:
+        """Get claim text for a specific patent ID"""
+        if self.patent_data is None:
+            return ""
+        
+        try:
+            # Find the patent by ID
+            patent_row = self.patent_data[self.patent_data['출원번호'] == patent_id]
+            
+            if patent_row.empty:
+                print(f"Patent with ID {patent_id} not found")
+                return ""
+            
+            # Get the claim text (청구항1)
+            claim_text = patent_row['청구항1'].iloc[0]
+            
+            if pd.isna(claim_text) or not claim_text:
+                print(f"No claim text found for patent {patent_id}")
+                return ""
+            
+            return str(claim_text).strip()
+            
+        except Exception as e:
+            print(f"Error getting claim text for patent {patent_id}: {e}")
+            return ""
 
 # Global RAG system instance
 rag_system = None

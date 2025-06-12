@@ -5,6 +5,9 @@ export interface Patent {
   application_year: number
   similarity_score: number
   claim_text: string
+  claim_key?: string
+  country_code?: string
+  product_group?: string
 }
 
 export interface SearchResponse {
