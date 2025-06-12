@@ -471,10 +471,24 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 border border-white/30 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-white/95 dark:hover:bg-gray-800/95"
+                    whileHover={{ y: -8, scale: 1.03 }}
+                    className="relative bg-gradient-to-br from-white/95 via-white/90 to-blue-50/30 dark:from-gray-800/95 dark:via-gray-800/90 dark:to-blue-900/20 backdrop-blur-xl rounded-3xl p-10 shadow-2xl hover:shadow-4xl transition-all duration-700 border-2 border-gradient-to-r from-indigo-200/30 to-purple-200/30 dark:from-indigo-600/20 dark:to-purple-600/20 hover:border-indigo-400/50 dark:hover:border-indigo-400/50 overflow-hidden group"
                   >
-                    <div className="flex">
+                    {/* Decorative gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    
+                    {/* Decorative floating elements */}
+                    <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="text-4xl text-indigo-600"
+                      >
+                        ✨
+                      </motion.div>
+                    </div>
+                    
+                    <div className="relative z-10 flex">
                       {/* Left content area */}
                       <div className="flex-1 pr-10">
                         <div className="mb-6">
@@ -513,38 +527,54 @@ export default function SearchPage({ onPatentSelect }: SearchPageProps) {
                         </div>
                         
                         <div className="mb-8 ml-12">
-                          <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-700 dark:to-blue-900 p-6 rounded-2xl border-l-4 border-indigo-500">
-                            <p className="text-gray-800 dark:text-gray-200 text-lg leading-relaxed font-medium">
-                              {patent.claim_text.length > 200 
-                                ? `${patent.claim_text.substring(0, 200)}...` 
-                                : patent.claim_text}
-                            </p>
+                          <div className="bg-gradient-to-br from-indigo-50/80 via-blue-50/60 to-purple-50/40 dark:from-indigo-900/30 dark:via-blue-900/20 dark:to-purple-900/10 p-8 rounded-3xl border-l-6 border-gradient-to-b from-indigo-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm">
+                            <div className="flex items-start">
+                              <motion.span
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="text-2xl mr-4 mt-1 opacity-60"
+                              >
+                                📝
+                              </motion.span>
+                              <p className="text-gray-800 dark:text-gray-100 text-xl leading-relaxed font-medium tracking-wide">
+                                {patent.claim_text.length > 200 
+                                  ? `${patent.claim_text.substring(0, 200)}...` 
+                                  : patent.claim_text}
+                              </p>
+                            </div>
                           </div>
                         </div>
                         
                         <motion.button
-                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileHover={{ scale: 1.08, y: -4 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => onPatentSelect(patent)}
-                          className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-2xl hover:from-indigo-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-300 font-bold text-lg ml-12 shadow-lg hover:shadow-xl"
+                          className="flex items-center space-x-4 px-10 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-3xl hover:from-indigo-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-500 font-bold text-xl ml-12 shadow-2xl hover:shadow-3xl border-2 border-white/20 hover:border-white/40 backdrop-blur-sm group"
                         >
                           <motion.span 
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                            className="text-2xl"
+                            animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="text-3xl group-hover:scale-125 transition-transform duration-300"
                           >
                             👁️
                           </motion.span>
-                          <span>상세 분석 보기</span>
+                          <span className="tracking-wide">상세 분석 보기</span>
+                          <motion.span
+                            animate={{ x: [0, 5, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className="text-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                          >
+                            →
+                          </motion.span>
                         </motion.button>
                       </div>
                       
                       {/* Right similarity chart area */}
-                      <div className="w-48 flex flex-col items-center justify-center space-y-6">
-                        <div className="text-2xl text-gray-600 dark:text-gray-400 font-bold">
+                      <div className="w-48 flex flex-col items-center justify-start space-y-2 pt-4">
+                        <div className="text-3xl text-indigo-600 dark:text-indigo-400 font-extrabold tracking-wide">
                           유사도
                         </div>
-                        <div className="transform scale-200">
+                        <div className="transform scale-200 mt-4">
                           <CircularProgress percentage={patent.similarity_score} />
                         </div>
                       </div>
